@@ -4,7 +4,7 @@ require_relative "lib/gc_tuner/version"
 
 Gem::Specification.new do |spec|
   spec.name = "gc_tuner"
-  spec.version = GcTuner::VERSION
+  spec.version = GCTuner::VERSION
   spec.authors = ["Peter Zhu"]
   spec.email = ["peter@peterzhu.ca"]
 
