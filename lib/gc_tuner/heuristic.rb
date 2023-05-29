@@ -6,8 +6,10 @@ module GCTuner
       SizePoolWarmup,
     ].freeze
 
-    def enabled_heuristics
-      HEURISTICS.keep_if(&:enabled?)
+    class << self
+      def enabled_heuristics
+        HEURISTICS.dup.keep_if(&:enabled?)
+      end
     end
   end
 end
