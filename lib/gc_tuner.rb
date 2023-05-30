@@ -7,11 +7,12 @@ require_relative "gc_tuner/heuristic/size_pool_warmup"
 
 require_relative "gc_tuner/configuration"
 require_relative "gc_tuner/gc_context"
-require_relative "gc_tuner/heuristic"
+require_relative "gc_tuner/heuristics"
 require_relative "gc_tuner/rack_plugin"
 require_relative "gc_tuner/request_collector"
 require_relative "gc_tuner/version"
 
 module GCTuner
   extend Configuration
+  extend Heuristics
 end
