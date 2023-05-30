@@ -3,8 +3,6 @@
 module GCTuner
   class RequestCollector
     def initialize
-      @enabled_heuristics = Heuristic.enabled_heuristics.map(&:new)
-
       @before_gc_context = GCContext.new
       @after_gc_context = GCContext.new
 
@@ -30,7 +28,7 @@ module GCTuner
       request_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond) - @start_time_ms
       @after_gc_context.update
 
-      @enabled_heuristics.each do |heuristic|
+      GCTuner.heuristics.each do |heuristic|
         heuristic.call(request_time, @before_gc_context, @after_gc_context)
       end
     end

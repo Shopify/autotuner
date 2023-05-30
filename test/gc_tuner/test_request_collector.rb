@@ -8,10 +8,7 @@ module GCTuner
       heuristic1 = mock
       heuristic2 = mock
 
-      Heuristic.stubs(:enabled_heuristics).returns([
-        mock.tap { |m| m.expects(:new).returns(heuristic1) },
-        mock.tap { |m| m.expects(:new).returns(heuristic2) },
-      ])
+      GCTuner.stubs(:heuristics).returns([heuristic1, heuristic2])
 
       request_collector = RequestCollector.new
 
