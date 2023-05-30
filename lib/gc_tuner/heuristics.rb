@@ -14,6 +14,10 @@ module GCTuner
       heuristics.map(&:tuning_message)
     end
 
+    def debug_messages
+      heuristics.map(&:debug_message)
+    end
+
     private
 
     def enabled_heuristics
