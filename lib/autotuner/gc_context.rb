@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   class GCContext
     attr_reader :stat, :stat_heap
 

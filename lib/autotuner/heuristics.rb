@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   module Heuristics
     HEURISTICS = [
       Heuristic::SizePoolWarmup,

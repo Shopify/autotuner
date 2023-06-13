@@ -2,13 +2,13 @@
 
 require "test_helper"
 
-module GCTuner
+module Autotuner
   class TestRequestCollector < Minitest::Test
     def test_request
       heuristic1 = mock
       heuristic2 = mock
 
-      GCTuner.stubs(:heuristics).returns([heuristic1, heuristic2])
+      Autotuner.stubs(:heuristics).returns([heuristic1, heuristic2])
 
       request_collector = RequestCollector.new
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   class RackPlugin
     def initialize(app)
       @app = app
@@ -8,7 +8,7 @@ module GCTuner
     end
 
     def call(env)
-      if GCTuner.enabled?
+      if Autotuner.enabled?
         @request_collector.request do
           @app.call(env)
         end

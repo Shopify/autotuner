@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-module GCTuner
+module Autotuner
   module DataStructure
     class TestDataPoints < Minitest::Test
       def test_insert

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   module Heuristic
     class SizePoolWarmup < Base
       DATA_POINTS_COUNT = 1_000

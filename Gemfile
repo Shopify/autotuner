@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in gc_tuner.gemspec
+# Specify your gem's dependencies in autotuner.gemspec
 gemspec
 
 gem "rake", "~> 13.0"

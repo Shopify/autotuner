@@ -2,5 +2,5 @@
 
 require "test_helper"
 
-class TestGCTuner < Minitest::Test
+class TestAutotuner < Minitest::Test
 end

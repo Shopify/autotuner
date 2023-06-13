@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   class RequestCollector
     def initialize
       @before_gc_context = GCContext.new
@@ -28,7 +28,7 @@ module GCTuner
       request_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond) - @start_time_ms
       @after_gc_context.update
 
-      GCTuner.heuristics.each do |heuristic|
+      Autotuner.heuristics.each do |heuristic|
         heuristic.call(request_time, @before_gc_context, @after_gc_context)
       end
     end

@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-module GCTuner
+module Autotuner
   module Heuristic
     class TestSizePoolWarmup < Minitest::Test
       def setup

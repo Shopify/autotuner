@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   module DataStructure
     class DataPoints
       STABLE_RATIO = 0.5

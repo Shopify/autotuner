@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GCTuner
+module Autotuner
   module Configuration
     attr_reader :sample_ratio
     attr_writer :enabled
