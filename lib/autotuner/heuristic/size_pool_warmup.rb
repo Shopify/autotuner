@@ -97,7 +97,7 @@ module Autotuner
         @request_time_data.insert(request_time)
 
         @size_pools_data.each_with_index do |data, i|
-          data.insert(after_gc_context.stat_heap[i][:heap_eden_pages])
+          data.insert(after_gc_context.stat_heap[i][:heap_eden_slots])
         end
       end
 

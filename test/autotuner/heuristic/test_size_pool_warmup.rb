@@ -31,13 +31,13 @@ module Autotuner
         gc_context = GCContext.new
         (SizePoolWarmup::DATA_POINTS_COUNT + 1).times do
           GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT].times do |i|
-            gc_context.stat_heap[i][:heap_eden_pages] += rand(10)
+            gc_context.stat_heap[i][:heap_eden_slots] += rand(10)
           end
           # 40 byte size
-          gc_context.stat_heap[0][:heap_eden_pages] = 100
+          gc_context.stat_heap[0][:heap_eden_slots] = 100
 
           # 80 byte size
-          gc_context.stat_heap[1][:heap_eden_pages] = rand(100)
+          gc_context.stat_heap[1][:heap_eden_slots] = rand(100)
 
           @size_pool_warmup.call(100 + rand(2), gc_context, gc_context)
         end
@@ -79,13 +79,13 @@ module Autotuner
         gc_context = GCContext.new
         (SizePoolWarmup::DATA_POINTS_COUNT + 1).times do
           GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT].times do |i|
-            gc_context.stat_heap[i][:heap_eden_pages] += rand(10)
+            gc_context.stat_heap[i][:heap_eden_slots] += rand(10)
           end
           # 40 byte size
-          gc_context.stat_heap[0][:heap_eden_pages] = 100
+          gc_context.stat_heap[0][:heap_eden_slots] = 100
 
           # 80 byte size
-          gc_context.stat_heap[1][:heap_eden_pages] = rand(100)
+          gc_context.stat_heap[1][:heap_eden_slots] = rand(100)
 
           @size_pool_warmup.call(100 + rand(2), gc_context, gc_context)
         end
@@ -117,7 +117,7 @@ module Autotuner
 
         (SizePoolWarmup::DATA_POINTS_COUNT + 1).times do
           GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT].times do |i|
-            gc_context.stat_heap[i][:heap_eden_pages] += rand(10)
+            gc_context.stat_heap[i][:heap_eden_slots] += rand(10)
           end
 
           @size_pool_warmup.call(100 + rand(2), gc_context, gc_context)
