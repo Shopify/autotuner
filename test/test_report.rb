@@ -15,6 +15,8 @@ module Autotuner
 
         Suggested tuning value:
           TESTING_ENV=123
+
+        #{Report::DISCLAIMER_MESSAGE.strip}
       MSG
     end
 
@@ -30,6 +32,8 @@ module Autotuner
 
         Suggested tuning value:
           TESTING_ENV=123 (configured value: 456)
+
+        #{Report::DISCLAIMER_MESSAGE.strip}
       MSG
     end
 
@@ -45,6 +49,8 @@ module Autotuner
         Suggested tuning values:
           TESTING_ONE=12
           TESTING_TWO=34
+
+        #{Report::DISCLAIMER_MESSAGE.strip}
       MSG
     end
 
@@ -60,6 +66,8 @@ module Autotuner
         Suggested tuning values:
           TESTING_ONE=12
           TESTING_TWO=34 (configured value: 10)
+
+        #{Report::DISCLAIMER_MESSAGE.strip}
       MSG
     end
   end

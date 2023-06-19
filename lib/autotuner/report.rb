@@ -7,6 +7,10 @@ module Autotuner
     attr_reader :suggested_value
     attr_reader :configured_value
 
+    DISCLAIMER_MESSAGE = <<~MSG
+      It is always recommended to experiment with these suggestions as some suggestions may not always yield positive performance improvements. The recommended method is to perform A/B testing where a portion of traffic does not have the these suggested values and a portion of traffic with these suggested values.
+    MSG
+
     def initialize(assist_message, env_name, suggested_value, configured_value)
       @assist_message = assist_message
       @env_name = env_name
@@ -27,6 +31,8 @@ module Autotuner
         msg << "Suggested tuning value:\n"
         msg << suggested_tuning_str(env_name, suggested_value, configured_value)
       end
+      msg << "\n"
+      msg << DISCLAIMER_MESSAGE
       msg.freeze
     end
 
