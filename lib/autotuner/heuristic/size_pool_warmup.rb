@@ -3,9 +3,15 @@
 module Autotuner
   module Heuristic
     class SizePoolWarmup < Base
+      SIZE_POOL_COUNT = GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT]
+
       DATA_POINTS_COUNT = 1_000
       SIZE_POOL_CONFIGURATION_DELTA_RATIO = 0.01
-      SIZE_POOL_CONFIGURATION_DELTA = 1
+      SIZE_POOL_CONFIGURATION_DELTA = 1_000
+
+      REPORT_ASSIST_MESSAGE = <<~MSG
+
+      MSG
 
       class << self
         private
@@ -23,72 +29,77 @@ module Autotuner
 
         @request_time_data = DataStructure::DataPoints.new(DATA_POINTS_COUNT)
 
-        @size_pool_count = GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT]
-        @size_pools_data = Array.new(@size_pool_count)
-        @size_pools_tuning_configuration = Array.new(@size_pool_count)
-        @size_pool_count.times do |i|
+        @size_pools_data = Array.new(SIZE_POOL_COUNT)
+        SIZE_POOL_COUNT.times do |i|
           @size_pools_data[i] = DataStructure::DataPoints.new(DATA_POINTS_COUNT)
-          @size_pools_tuning_configuration[i] = ENV[env_name_for_size_pool(i)].to_i
         end
 
-        @plateaued = false
+        @given_suggestion = false
       end
 
       def call(request_time, _before_gc_context, after_gc_context)
-        # We only want to collect data at boot until the request time plateaus
-        return if @plateaued
+        # We only want to collect data at boot until plateau
+        return if @given_suggestion
 
         insert_data(request_time, after_gc_context)
-
-        return unless @request_time_data.plateaued?
-
-        @plateaued = true
       end
 
-      def tuning_message
-        msg = nil
+      def tuning_report
+        # Don't give suggestions twice
+        return if @given_suggestion
+        # The request time should plateau
+        return unless @request_time_data.plateaued?
+        # The size of the size pools should plateau
+        return unless @size_pools_data.all?(&:plateaued?)
 
-        if @plateaued
-          size_pool_messages = @size_pool_count.times.map do |i|
-            tuning_message_for_size_pool(i)
-          end.compact
+        @given_suggestion = true
 
-          unless size_pool_messages.empty?
-            msg = <<~MSG
-              Here are the recommended tuning values for size pools and the confidence scores.
-              Confidence scores are between 0 and 1.0 and represent the correlation between
-              the tuning value and the response time.
+        env_names = []
+        suggested_values = []
+        configured_values = []
+        SIZE_POOL_COUNT.times do |i|
+          env_name = env_name_for_size_pool(i)
 
-            MSG
+          data = @size_pools_data[i]
+          suggested_value = data.samples[data.length - 1].to_i
 
-            msg += size_pool_messages.join
+          env_val = ENV[env_name]
+          configured_value = env_val&.to_i
+
+          if configured_value
+            diff = (suggested_value - configured_value).abs
+
+            # Don't report this if it's within the ratio
+            next if diff <= configured_value * SIZE_POOL_CONFIGURATION_DELTA_RATIO
+            # Don't report this if it's within the delta
+            next if diff <= SIZE_POOL_CONFIGURATION_DELTA
           end
-        else
-          msg = <<~MSG.chomp
-            There is not enough data and/or response times have not plateaued.
-          MSG
+
+          env_names << env_name
+          suggested_values << suggested_value
+          configured_values << configured_value
         end
 
-        msg
+        Report.new(REPORT_ASSIST_MESSAGE, env_names, suggested_values, configured_values)
       end
 
       def debug_message
-        msg = <<~MSG
-          plateaued: #{@plateaued}
+        msg = +<<~MSG
+          given_suggestion: #{@given_suggestion}
           request_time_data: #{@request_time_data}
         MSG
 
         @size_pools_data.each_with_index do |data, i|
-          msg += "size_pools_data[#{i}]: #{data}\n"
+          msg << "size_pools_data[#{i}]: #{data}\n"
         end
 
-        if @plateaued
-          msg += @size_pool_count.times.map do |i|
-            tuning_message_for_size_pool(i, debug: true)
-          end.join
+        SIZE_POOL_COUNT.times do |i|
+          env_var = env_name_for_size_pool(i)
+          env_val = ENV[env_var]
+          msg << "ENV[#{env_var}]: #{env_val}\n" if env_val
         end
 
-        msg
+        msg.freeze
       end
 
       private
@@ -105,26 +116,6 @@ module Autotuner
         slot_size = GC::INTERNAL_CONSTANTS[:BASE_SLOT_SIZE] * (2**size_pool)
 
         "RUBY_GC_HEAP_INIT_SIZE_#{slot_size}_SLOTS"
-      end
-
-      def tuning_message_for_size_pool(size_pool, debug: false)
-        configured_value = @size_pools_tuning_configuration[size_pool]
-
-        data = @size_pools_data[size_pool]
-        suggested_value = data.samples[data.length - 1].to_i
-
-        diff = (configured_value - suggested_value).abs
-        if debug ||
-            (diff > configured_value * SIZE_POOL_CONFIGURATION_DELTA_RATIO && diff > SIZE_POOL_CONFIGURATION_DELTA)
-          confidence = @request_time_data.correlation(data).abs
-
-          msg = ""
-          msg += "#{env_name_for_size_pool(size_pool)}=#{suggested_value} (confidence: #{format("%.2f", confidence)}"
-          msg += ", tuned value: #{configured_value}" if configured_value > 0
-          msg += ")\n"
-
-          msg
-        end
       end
     end
   end

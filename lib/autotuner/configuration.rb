@@ -4,6 +4,7 @@ module Autotuner
   module Configuration
     attr_reader :sample_ratio
     attr_writer :enabled
+    attr_accessor :reporter
 
     def enabled?
       @enabled

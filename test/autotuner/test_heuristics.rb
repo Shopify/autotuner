@@ -10,27 +10,6 @@ module Autotuner
       end
     end
 
-    def test_tuning_messages
-      messages = Autotuner.tuning_messages
-
-      assert_equal(Heuristics::HEURISTICS.length, messages.length)
-      assert_instance_of(Array, messages)
-      messages.each do |msg|
-        assert_instance_of(String, msg)
-      end
-    end
-
-    def test_tuning_messages_calls_tuning_message
-      heuristic1 = mock
-      heuristic2 = mock
-      heuristic1.expects(:tuning_message).returns("Heuristic 1")
-      heuristic2.expects(:tuning_message).returns("Heuristic 2")
-
-      Autotuner.stubs(:heuristics).returns([heuristic1, heuristic2])
-
-      assert_equal(["Heuristic 1", "Heuristic 2"], Autotuner.tuning_messages)
-    end
-
     def test_debug_messages
       messages = Autotuner.debug_messages
 

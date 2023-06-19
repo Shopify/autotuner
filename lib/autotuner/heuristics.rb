@@ -10,10 +10,6 @@ module Autotuner
       @heuristics ||= enabled_heuristics.map(&:new)
     end
 
-    def tuning_messages
-      heuristics.map(&:tuning_message)
-    end
-
     def debug_messages
       heuristics.map(&:debug_message)
     end

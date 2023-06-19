@@ -9,6 +9,7 @@ require_relative "autotuner/configuration"
 require_relative "autotuner/gc_context"
 require_relative "autotuner/heuristics"
 require_relative "autotuner/rack_plugin"
+require_relative "autotuner/report"
 require_relative "autotuner/request_collector"
 require_relative "autotuner/version"
 

@@ -23,7 +23,7 @@ module Autotuner
         raise NotImplementedError
       end
 
-      def tuning_message
+      def tuning_report
         raise NotImplementedError
       end
 
