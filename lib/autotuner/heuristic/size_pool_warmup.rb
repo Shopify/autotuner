@@ -10,7 +10,7 @@ module Autotuner
       SIZE_POOL_CONFIGURATION_DELTA = 1_000
 
       REPORT_ASSIST_MESSAGE = <<~MSG
-
+        The following suggestions adjusts the size of heap at boot time, which can improve bootup speed and reduce the time taken for the app to reach peak performance.
       MSG
 
       class << self
