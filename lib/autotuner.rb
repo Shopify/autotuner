@@ -3,6 +3,7 @@
 require_relative "autotuner/data_structure/data_points"
 
 require_relative "autotuner/heuristic/base"
+require_relative "autotuner/heuristic/oldmalloc"
 require_relative "autotuner/heuristic/size_pool_warmup"
 
 require_relative "autotuner/configuration"

@@ -4,6 +4,7 @@ module Autotuner
   module Heuristics
     HEURISTICS = [
       Heuristic::SizePoolWarmup,
+      Heuristic::Oldmalloc,
     ].freeze
 
     def heuristics
