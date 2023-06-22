@@ -56,10 +56,11 @@ module Autotuner
         assert_nil(report)
 
         # Insert non-platueau data
+        request_time = 0
         (SizePoolWarmup::DATA_POINTS_COUNT + 1).times do |_i|
-          @gc_context.stat_heap[0][:heap_eden_slots] += 100
+          request_time += 10
 
-          @size_pool_warmup.call(100, @gc_context, @gc_context)
+          @size_pool_warmup.call(request_time, @gc_context, @gc_context)
         end
 
         report = @size_pool_warmup.tuning_report

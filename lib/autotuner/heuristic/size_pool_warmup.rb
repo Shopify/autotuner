@@ -49,8 +49,6 @@ module Autotuner
         return if @given_suggestion
         # The request time should plateau
         return unless @request_time_data.plateaued?
-        # The size of the size pools should plateau
-        return unless @size_pools_data.all?(&:plateaued?)
 
         @given_suggestion = true
 
