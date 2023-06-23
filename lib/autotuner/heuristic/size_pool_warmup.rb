@@ -3,6 +3,8 @@
 module Autotuner
   module Heuristic
     class SizePoolWarmup < Base
+      NAME = "SizePoolWarmup"
+
       SIZE_POOL_COUNT = GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT]
 
       DATA_POINTS_COUNT = 1_000
@@ -35,6 +37,10 @@ module Autotuner
         end
 
         @given_suggestion = false
+      end
+
+      def name
+        NAME
       end
 
       def call(request_time, _before_gc_context, after_gc_context)

@@ -3,6 +3,8 @@
 module Autotuner
   module Heuristic
     class Oldmalloc < Base
+      NAME = "Oldmalloc"
+
       OLDMALLOC_GC_RATIO_THRESHOLD = 0.01
       MIN_OLDMALLOC_GC = 10
 
@@ -30,6 +32,10 @@ module Autotuner
         @oldmalloc_gc_count = 0
 
         @given_suggestion = false
+      end
+
+      def name
+        NAME
       end
 
       def call(_request_time, before_gc_context, after_gc_context)

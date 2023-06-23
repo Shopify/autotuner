@@ -12,7 +12,7 @@ module Autotuner
     end
 
     def debug_messages
-      heuristics.map(&:debug_message)
+      heuristics.map { |h| [h.name, h.debug_message] }.to_h
     end
 
     private

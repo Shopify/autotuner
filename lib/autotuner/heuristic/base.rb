@@ -19,6 +19,10 @@ module Autotuner
         end
       end
 
+      def name
+        raise NotImplementedError
+      end
+
       def call(request_time, before_gc_context, after_gc_context)
         raise NotImplementedError
       end
