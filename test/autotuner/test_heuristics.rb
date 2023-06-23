@@ -23,37 +23,12 @@ module Autotuner
       end
     end
 
-    def test_debug_messages
-      messages = Autotuner.debug_messages
+    def test_debug_message
+      messages = Autotuner.heuristics.map(&:debug_message)
 
-      assert_instance_of(Hash, messages)
-      assert_equal(Heuristics::HEURISTICS.length, messages.length)
-      messages.each do |name, msg|
-        assert_instance_of(String, name)
+      messages.each do |msg|
         assert_instance_of(String, msg)
       end
-    end
-
-    def test_debug_messages_calls_debug_message
-      mock_heuristic = Class.new(Heuristic::Base) do
-        attr_reader :name, :debug_message
-
-        def initialize(name, debug_message)
-          super()
-          @name = name
-          @debug_message = debug_message
-        end
-      end
-
-      heuristic1 = mock_heuristic.new("Heuristic1", "Debug message 1")
-      heuristic2 = mock_heuristic.new("Heuristic2", "Debug message 2")
-
-      Autotuner.stubs(:heuristics).returns([heuristic1, heuristic2])
-
-      assert_equal(
-        { "Heuristic1" => "Debug message 1", "Heuristic2" => "Debug message 2" },
-        Autotuner.debug_messages,
-      )
     end
   end
 end

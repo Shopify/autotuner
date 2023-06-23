@@ -3,9 +3,10 @@
 module Autotuner
   class RequestCollector
     HEURISTICS_POLLING_FREQUENCY = 100
+    DEBUG_EMIT_FREQUENCY = 1000
 
     def initialize
-      @requests_since_last_heuristic_poll = 0
+      @request_count = 0
 
       @before_gc_context = GCContext.new
       @after_gc_context = GCContext.new
@@ -27,7 +28,7 @@ module Autotuner
       @before_gc_context.update
       @start_time_ms = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
 
-      @requests_since_last_heuristic_poll += 1
+      @request_count += 1
     end
 
     def after_request
@@ -38,21 +39,30 @@ module Autotuner
         heuristic.call(request_time, @before_gc_context, @after_gc_context)
       end
 
-      if @requests_since_last_heuristic_poll >= HEURISTICS_POLLING_FREQUENCY
-        @requests_since_last_heuristic_poll = 0
+      emit_heuristic_reports if @request_count % HEURISTICS_POLLING_FREQUENCY == 0
+      emit_debugging_messages if @request_count % DEBUG_EMIT_FREQUENCY == 0
+    end
 
-        Autotuner.heuristics.each do |heuristic|
-          report = heuristic.tuning_report
+    def emit_heuristic_reports
+      Autotuner.heuristics.each do |heuristic|
+        report = heuristic.tuning_report
 
-          next unless report
+        next unless report
 
-          if Autotuner.reporter
-            Autotuner.reporter.call(report)
-          else
-            warn("Autotuner has been enabled but Autotuner.reporter has not been configured")
-          end
+        if Autotuner.reporter
+          Autotuner.reporter.call(report)
+        else
+          warn("Autotuner has been enabled but Autotuner.reporter has not been configured")
         end
       end
+    end
+
+    def emit_debugging_messages
+      return unless Autotuner.debug_reporter
+
+      debug_messages = Autotuner.heuristics.map { |h| [h.name, h.debug_message] }.to_h
+
+      Autotuner.debug_reporter.call(debug_messages)
     end
   end
 end

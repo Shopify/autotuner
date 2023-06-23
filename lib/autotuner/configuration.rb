@@ -6,6 +6,9 @@ module Autotuner
     attr_writer :enabled
     attr_accessor :reporter
 
+    # Set this callback to report debug information periodically.
+    attr_accessor :debug_reporter
+
     def enabled?
       @enabled
     end

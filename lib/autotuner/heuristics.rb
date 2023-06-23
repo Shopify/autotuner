@@ -11,10 +11,6 @@ module Autotuner
       @heuristics ||= enabled_heuristics.map(&:new)
     end
 
-    def debug_messages
-      heuristics.map { |h| [h.name, h.debug_message] }.to_h
-    end
-
     private
 
     def enabled_heuristics
