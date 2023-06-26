@@ -18,6 +18,8 @@ $ bundle add autotuner
   ```
 1. Create an initializer in `config/initializers/autotuner.rb`:
   ```ruby
+  # Enable autotuner. Alternatively, call Autotuner.sample_ratio= with a value
+  # between 0 and 1.0 to sample on a portion of instances.
   Autotuner.enabled = true
   Autotuner.reporter = proc do |report|
     # This callback is called whenever a suggestion is provided by this gem.
@@ -30,6 +32,7 @@ $ bundle add autotuner
 ## Configuration
 
 - `Autotuner.enabled=`: Sets whether autotuner is enabled or not. When autotuner is disabled, data is not collected and suggestions are not given. Defaults to `false`.
+- `Autotuner.sample_ratio=`: Sets the portion of instances where autotuner is enabled. Pass a value between 0 (enabled on no intances) and 1.0 (enabled on all instances). Note that this does not sample reqeusts, but rather samples the portion of instances that have autotuner enabled (it will be enabled for all requests on those instances). Do not configure `Autotuner.enabled=` when you use this option.
 - `Autotuner.reporter=`: Callback called when a heuristic is ready to give a suggestion. The callback will be called with one argument which will be an instance of `Autotuner::Report::Base`. Call `#to_s` on this object to get a string containing instructions and recommendations. You must set this when autotuner is enabled.
 - `Autotuner.debug_reporter=`: Callback to periodically emit debug messages of internal state of heuristics. The callback will be called with one argument which will be a hash with the heuristic name as the key and the debug message as the value. Regular users do not need to configure this as this is only useful for debugging purposes.
 
