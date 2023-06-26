@@ -61,7 +61,7 @@ module Autotuner
 
         @given_suggestion = true
 
-        Report.new(
+        Report::MultipleEnvironmentVariables.new(
           <<~MSG,
             The following suggestions reduces the number of major garbage collection cycles, specifically a cycle called "oldmalloc". Your apps runs oldmalloc cycles in approximately #{format("%.2f", oldmalloc_gc_ratio * 100)}% of all major garbage collection cycles.
 
