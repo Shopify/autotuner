@@ -88,12 +88,6 @@ module Autotuner
 
         assert(state[:given_suggestion])
         assert_instance_of(Hash, state[:request_time_data])
-
-        assert_instance_of(Hash, state[:"size_pools_data[0]"])
-        assert_instance_of(Hash, state[:"size_pools_data[1]"])
-        assert_instance_of(Hash, state[:"size_pools_data[2]"])
-        assert_instance_of(Hash, state[:"size_pools_data[3]"])
-        assert_instance_of(Hash, state[:"size_pools_data[4]"])
       end
 
       def test_debug_state_with_initial_configuration
@@ -110,12 +104,6 @@ module Autotuner
         assert(state[:given_suggestion])
         assert_instance_of(Hash, state[:request_time_data])
 
-        assert_instance_of(Hash, state[:"size_pools_data[0]"])
-        assert_instance_of(Hash, state[:"size_pools_data[1]"])
-        assert_instance_of(Hash, state[:"size_pools_data[2]"])
-        assert_instance_of(Hash, state[:"size_pools_data[3]"])
-        assert_instance_of(Hash, state[:"size_pools_data[4]"])
-
         assert_equal("10000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_40_SLOTS]"])
         assert_equal("20000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_160_SLOTS]"])
         refute(state.key?(:"ENV[RUBY_GC_HEAP_INIT_SIZE_80_SLOTS]"))
@@ -128,12 +116,6 @@ module Autotuner
 
         refute(state[:given_suggestion])
         assert_instance_of(Hash, state[:request_time_data])
-
-        assert_instance_of(Hash, state[:"size_pools_data[0]"])
-        assert_instance_of(Hash, state[:"size_pools_data[1]"])
-        assert_instance_of(Hash, state[:"size_pools_data[2]"])
-        assert_instance_of(Hash, state[:"size_pools_data[3]"])
-        assert_instance_of(Hash, state[:"size_pools_data[4]"])
       end
 
       private

@@ -93,9 +93,7 @@ module Autotuner
           request_time_data: @request_time_data.debug_state,
         }
 
-        @size_pools_data.each_with_index do |data, i|
-          state[:"size_pools_data[#{i}]"] = data.debug_state
-        end
+        # Don't output @size_pools_data because there is too much data.
 
         SIZE_POOL_COUNT.times do |i|
           env_var = env_name_for_size_pool(i)
