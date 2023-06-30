@@ -83,7 +83,6 @@ module Autotuner
         end
       end
 
-      original_reporter = Autotuner.reporter
       Autotuner.reporter = mock
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
@@ -119,19 +118,17 @@ module Autotuner
       @request_collector.request {}
 
       heuristics.each { |h| assert_equal(2, h.tuning_report_calls) }
-    ensure
-      Autotuner.reporter = original_reporter
     end
 
-    def test_request_polls_debug_messages
+    def test_request_polls_debug_states
       mock_heuristic = Class.new(Heuristic::Base) do
-        attr_reader :name, :debug_message
+        attr_reader :name, :debug_state
 
-        def initialize(name, debug_message)
+        def initialize(name, debug_state)
           super()
 
           @name = name
-          @debug_message = debug_message
+          @debug_state = debug_state
         end
 
         def call(request_time, before_gc_context, after_gc_context); end
@@ -144,14 +141,17 @@ module Autotuner
       orig_debug_reporter = Autotuner.debug_reporter
       Autotuner.debug_reporter = mock
 
-      heuristics = [mock_heuristic.new("Heuristic1", "Debug1"), mock_heuristic.new("Heuristic2", "Debug2")]
+      heuristics = [mock_heuristic.new("Heuristic1", { foo: "bar" }), mock_heuristic.new("Heuristic2", { bar: "baz" })]
       Autotuner.stubs(:heuristics).returns(heuristics)
 
       (RequestCollector::DEBUG_EMIT_FREQUENCY - 1).times do
         @request_collector.request {}
       end
 
-      Autotuner.debug_reporter.expects(:call).with({ "Heuristic1" => "Debug1", "Heuristic2" => "Debug2" }).once
+      Autotuner.debug_reporter
+        .expects(:call)
+        .with({ "Heuristic1" => heuristics[0].debug_state, "Heuristic2" => heuristics[1].debug_state })
+        .once
       @request_collector.request {}
     ensure
       Autotuner.debug_reporter = orig_debug_reporter

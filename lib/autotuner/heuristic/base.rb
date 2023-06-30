@@ -31,7 +31,7 @@ module Autotuner
         raise NotImplementedError
       end
 
-      def debug_message
+      def debug_state
         raise NotImplementedError
       end
     end

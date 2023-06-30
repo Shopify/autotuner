@@ -107,12 +107,12 @@ module Autotuner
         assert_nil(@oldmalloc.tuning_report)
       end
 
-      def test_debug_message
-        msg = @oldmalloc.debug_message
+      def test_debug_state
+        state = @oldmalloc.debug_state
 
-        assert_includes(msg, "given_suggestion: false\n")
-        assert_includes(msg, "major_gc_count: 0\n")
-        assert_includes(msg, "oldmalloc_gc_count: 0\n")
+        refute(state[:given_suggestion])
+        assert_equal(0, state[:major_gc_count])
+        assert_equal(0, state[:oldmalloc_gc_count])
       end
     end
   end

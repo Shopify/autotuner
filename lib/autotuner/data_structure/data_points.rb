@@ -74,8 +74,14 @@ module Autotuner
           (Math.sqrt((length * sum_x_2) - (sum_x**2)) * Math.sqrt((length * sum_y_2) - (sum_y**2)))
       end
 
-      def to_s
-        inspect
+      def debug_state
+        {
+          samples: @samples,
+          length: @length,
+          compression_ratio: @compression_ratio,
+          temp_sample: @temp_sample,
+          temp_sample_count: @temp_sample_count,
+        }
       end
 
       private

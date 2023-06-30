@@ -80,44 +80,60 @@ module Autotuner
         assert_nil(report)
       end
 
-      def test_debug_message
+      def test_debug_state
         insert_plateau_data
 
         @size_pool_warmup.tuning_report
-        msg = @size_pool_warmup.debug_message
+        state = @size_pool_warmup.debug_state
 
-        assert_includes(msg, "given_suggestion: true\n")
-        assert_match(/^request_time_data: .+$/, msg)
-        assert_match(/^size_pools_data\[0\]: .+$/, msg)
+        assert(state[:given_suggestion])
+        assert_instance_of(Hash, state[:request_time_data])
+
+        assert_instance_of(Hash, state[:"size_pools_data[0]"])
+        assert_instance_of(Hash, state[:"size_pools_data[1]"])
+        assert_instance_of(Hash, state[:"size_pools_data[2]"])
+        assert_instance_of(Hash, state[:"size_pools_data[3]"])
+        assert_instance_of(Hash, state[:"size_pools_data[4]"])
       end
 
-      def test_debug_message_with_initial_configuration
+      def test_debug_state_with_initial_configuration
         original_env = ENV.to_h
 
         ENV["RUBY_GC_HEAP_INIT_SIZE_40_SLOTS"] = "10000"
-        ENV["RUBY_GC_HEAP_INIT_SIZE_80_SLOTS"] = "20000"
+        ENV["RUBY_GC_HEAP_INIT_SIZE_160_SLOTS"] = "20000"
 
         insert_plateau_data
 
         @size_pool_warmup.tuning_report
-        msg = @size_pool_warmup.debug_message
+        state = @size_pool_warmup.debug_state
 
-        assert_includes(msg, "given_suggestion: true\n")
-        assert_match(/^request_time_data: .+$/, msg)
-        assert_match(/^size_pools_data\[0\]: .+$/, msg)
+        assert(state[:given_suggestion])
+        assert_instance_of(Hash, state[:request_time_data])
 
-        assert_match(/^ENV\[RUBY_GC_HEAP_INIT_SIZE_40_SLOTS\]: 10000$/, msg)
-        assert_match(/^ENV\[RUBY_GC_HEAP_INIT_SIZE_80_SLOTS\]: 20000$/, msg)
+        assert_instance_of(Hash, state[:"size_pools_data[0]"])
+        assert_instance_of(Hash, state[:"size_pools_data[1]"])
+        assert_instance_of(Hash, state[:"size_pools_data[2]"])
+        assert_instance_of(Hash, state[:"size_pools_data[3]"])
+        assert_instance_of(Hash, state[:"size_pools_data[4]"])
+
+        assert_equal("10000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_40_SLOTS]"])
+        assert_equal("20000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_160_SLOTS]"])
+        refute(state.key?(:"ENV[RUBY_GC_HEAP_INIT_SIZE_80_SLOTS]"))
       ensure
         ENV.replace(original_env)
       end
 
-      def test_debug_message_for_no_data
-        msg = @size_pool_warmup.debug_message
+      def test_debug_state_with_no_data
+        state = @size_pool_warmup.debug_state
 
-        assert_includes(msg, "given_suggestion: false\n")
-        assert_match(/^request_time_data: .+$/, msg)
-        assert_match(/^size_pools_data\[0\]: .+$/, msg)
+        refute(state[:given_suggestion])
+        assert_instance_of(Hash, state[:request_time_data])
+
+        assert_instance_of(Hash, state[:"size_pools_data[0]"])
+        assert_instance_of(Hash, state[:"size_pools_data[1]"])
+        assert_instance_of(Hash, state[:"size_pools_data[2]"])
+        assert_instance_of(Hash, state[:"size_pools_data[3]"])
+        assert_instance_of(Hash, state[:"size_pools_data[4]"])
       end
 
       private

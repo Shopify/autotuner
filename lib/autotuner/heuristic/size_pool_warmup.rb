@@ -87,23 +87,23 @@ module Autotuner
         Report::MultipleEnvironmentVariables.new(REPORT_ASSIST_MESSAGE, env_names, suggested_values, configured_values)
       end
 
-      def debug_message
-        msg = +<<~MSG
-          given_suggestion: #{@given_suggestion}
-          request_time_data: #{@request_time_data}
-        MSG
+      def debug_state
+        state = {
+          given_suggestion: @given_suggestion,
+          request_time_data: @request_time_data.debug_state,
+        }
 
         @size_pools_data.each_with_index do |data, i|
-          msg << "size_pools_data[#{i}]: #{data}\n"
+          state[:"size_pools_data[#{i}]"] = data.debug_state
         end
 
         SIZE_POOL_COUNT.times do |i|
           env_var = env_name_for_size_pool(i)
           env_val = ENV[env_var]
-          msg << "ENV[#{env_var}]: #{env_val}\n" if env_val
+          state[:"ENV[#{env_var}]"] = env_val if env_val
         end
 
-        msg.freeze
+        state
       end
 
       private

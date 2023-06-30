@@ -23,11 +23,11 @@ module Autotuner
       end
     end
 
-    def test_debug_message
-      messages = Autotuner.heuristics.map(&:debug_message)
+    def test_debug_state
+      messages = Autotuner.heuristics.map(&:debug_state)
 
       messages.each do |msg|
-        assert_instance_of(String, msg)
+        assert_instance_of(Hash, msg)
       end
     end
   end

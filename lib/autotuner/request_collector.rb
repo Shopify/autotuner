@@ -40,7 +40,7 @@ module Autotuner
       end
 
       emit_heuristic_reports if @request_count % HEURISTICS_POLLING_FREQUENCY == 0
-      emit_debugging_messages if @request_count % DEBUG_EMIT_FREQUENCY == 0
+      emit_debugging_states if @request_count % DEBUG_EMIT_FREQUENCY == 0
     end
 
     def emit_heuristic_reports
@@ -57,12 +57,15 @@ module Autotuner
       end
     end
 
-    def emit_debugging_messages
+    def emit_debugging_states
       return unless Autotuner.debug_reporter
 
-      debug_messages = Autotuner.heuristics.map { |h| [h.name, h.debug_message] }.to_h
+      debug_states = {}
+      Autotuner.heuristics.each do |h|
+        debug_states[h.name] = h.debug_state
+      end
 
-      Autotuner.debug_reporter.call(debug_messages)
+      Autotuner.debug_reporter.call(debug_states)
     end
   end
 end

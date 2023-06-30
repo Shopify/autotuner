@@ -73,12 +73,12 @@ module Autotuner
         )
       end
 
-      def debug_message
-        <<~MSG
-          given_suggestion: #{@given_suggestion}
-          major_gc_count: #{@major_gc_count}
-          oldmalloc_gc_count: #{@oldmalloc_gc_count}
-        MSG
+      def debug_state
+        {
+          given_suggestion: @given_suggestion,
+          major_gc_count: @major_gc_count,
+          oldmalloc_gc_count: @oldmalloc_gc_count,
+        }
       end
     end
   end
