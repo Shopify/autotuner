@@ -13,6 +13,10 @@ module Autotuner
         @after_gc_context.latest_gc_info[:gc_by] = :malloc
       end
 
+      def test_enabled?
+        assert_predicate(Malloc, :enabled?)
+      end
+
       def test_call_increments_minor_and_malloc_counts
         @malloc.call(10.0, @before_gc_context, @after_gc_context)
 

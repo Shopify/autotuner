@@ -9,6 +9,34 @@ module Autotuner
         @after_gc_context = GCContext.new
 
         @after_gc_context.stat[:major_gc_count] = @before_gc_context.stat[:major_gc_count] + 1
+        @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+      end
+
+      def test_enabled?
+        assert_predicate(Oldmalloc, :enabled?)
+      end
+
+      def test_call_increments_major_and_malloc_counts
+        @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+
+        assert_equal(1, @oldmalloc.major_gc_count)
+        assert_equal(1, @oldmalloc.oldmalloc_gc_count)
+      end
+
+      def test_call_increments_major_count
+        @after_gc_context.latest_gc_info[:major_by] = :force
+        @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+
+        assert_equal(1, @oldmalloc.major_gc_count)
+        assert_equal(0, @oldmalloc.oldmalloc_gc_count)
+      end
+
+      def test_call_does_not_increment_when_no_major_gc_ran
+        @after_gc_context.stat[:major_gc_count] = @before_gc_context.stat[:major_gc_count]
+        @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+
+        assert_equal(0, @oldmalloc.major_gc_count)
+        assert_equal(0, @oldmalloc.oldmalloc_gc_count)
       end
 
       def test_tuning_report
@@ -64,7 +92,6 @@ module Autotuner
 
       def test_tuning_report_below_min_oldmalloc
         (Oldmalloc::MIN_OLDMALLOC_GC - 1).times do
-          @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
           @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
         end
 

@@ -10,6 +10,10 @@ module Autotuner
         @gc_context = GCContext.new
       end
 
+      def test_enabled?
+        assert_predicate(SizePoolWarmup, :enabled?)
+      end
+
       def test_tuning_report
         insert_plateau_data
 

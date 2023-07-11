@@ -25,6 +25,8 @@ module Autotuner
       LIMIT_ENV_SUGGESTED_VALUE = 1_000_000_000_000
       LIMIT_MAX_SUGGESTED_VALUE = 1_000_000_000_000
 
+      attr_reader :major_gc_count
+      attr_reader :oldmalloc_gc_count
 
       def initialize
         super
