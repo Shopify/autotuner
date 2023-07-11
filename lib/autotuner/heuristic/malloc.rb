@@ -8,7 +8,11 @@ module Autotuner
       MALLOC_GC_RATIO_THRESHOLD = 0.1
       MIN_MALLOC_GC = 10
 
+      # From the GC_MALLOC_LIMIT_MIN macro
+      # https://github.com/ruby/ruby/blob/3874381c4483ba7794ac2abf157e265546f9bfa7/gc.c#L312C9-L312C9
       DEFAULT_MALLOC_LIMIT = 16 * 1024 * 1024
+      # From the GC_MALLOC_LIMIT_MAX macro
+      # https://github.com/ruby/ruby/blob/3874381c4483ba7794ac2abf157e265546f9bfa7/gc.c#L315C9-L315C28
       DEFAULT_MALLOC_LIMIT_MAX = 32 * 1024 * 1024
 
       LIMIT_ENV = "RUBY_GC_MALLOC_LIMIT"
