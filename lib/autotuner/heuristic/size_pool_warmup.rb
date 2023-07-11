@@ -3,6 +3,17 @@
 module Autotuner
   module Heuristic
     class SizePoolWarmup < Base
+      class << self
+        private
+
+        def supported?
+          # Ruby 3.3.0 and later have support RUBY_GC_HEAP_INIT_SIZE_%d_SLOTS
+          # RUBY_VERSION >= "3.3.0"
+          # TODO: use the check above
+          true
+        end
+      end
+
       NAME = "SizePoolWarmup"
 
       SIZE_POOL_COUNT = GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT]
@@ -14,17 +25,6 @@ module Autotuner
       REPORT_ASSIST_MESSAGE = <<~MSG
         The following suggestions adjusts the size of heap at boot time, which can improve bootup speed and reduce the time taken for the app to reach peak performance.
       MSG
-
-      class << self
-        private
-
-        def supported?
-          # Ruby 3.3.0 and later have support RUBY_GC_HEAP_INIT_SIZE_%d_SLOTS
-          # RUBY_VERSION >= "3.3.0"
-          # TODO: use the check above
-          true
-        end
-      end
 
       def initialize
         super

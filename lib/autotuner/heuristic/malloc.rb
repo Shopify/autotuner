@@ -3,6 +3,14 @@
 module Autotuner
   module Heuristic
     class Malloc < Base
+      class << self
+        private
+
+        def supported?
+          true
+        end
+      end
+
       NAME = "Malloc"
 
       MALLOC_GC_RATIO_THRESHOLD = 0.1
@@ -20,14 +28,6 @@ module Autotuner
 
       attr_reader :minor_gc_count
       attr_reader :malloc_gc_count
-
-      class << self
-        private
-
-        def supported?
-          true
-        end
-      end
 
       def initialize
         super

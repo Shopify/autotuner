@@ -3,6 +3,14 @@
 module Autotuner
   module Heuristic
     class Oldmalloc < Base
+      class << self
+        private
+
+        def supported?
+          true
+        end
+      end
+
       NAME = "Oldmalloc"
 
       OLDMALLOC_GC_RATIO_THRESHOLD = 0.01
@@ -17,13 +25,6 @@ module Autotuner
       LIMIT_ENV_SUGGESTED_VALUE = 1_000_000_000_000
       LIMIT_MAX_SUGGESTED_VALUE = 1_000_000_000_000
 
-      class << self
-        private
-
-        def supported?
-          true
-        end
-      end
 
       def initialize
         super
