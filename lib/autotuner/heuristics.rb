@@ -2,10 +2,7 @@
 
 module Autotuner
   module Heuristics
-    HEURISTICS = [
-      Heuristic::SizePoolWarmup,
-      Heuristic::Oldmalloc,
-    ].freeze
+    HEURISTICS = Heuristic::Base.subclasses.freeze
 
     def heuristics
       @heuristics ||= enabled_heuristics.map(&:new)
