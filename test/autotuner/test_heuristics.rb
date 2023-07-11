@@ -4,15 +4,21 @@ require "test_helper"
 
 module Autotuner
   class TestHeuristics < Minitest::Test
+    def setup
+      @heuristics = Autotuner.enabled_heuristics.map { |h| h.new(nil) }
+    end
+
     def test_heuristics
-      Autotuner.heuristics.each do |heuristic|
-        assert_predicate(heuristic.class, :enabled?)
+      assert_operator(Autotuner.enabled_heuristics.length, :>, 0)
+
+      Autotuner.enabled_heuristics.each do |heuristic|
+        assert_predicate(heuristic, :enabled?)
       end
     end
 
     def test_name
       names = []
-      Autotuner.heuristics.each do |heuristic|
+      @heuristics.each do |heuristic|
         name = heuristic.name
 
         assert_instance_of(String, name)
@@ -24,7 +30,7 @@ module Autotuner
     end
 
     def test_debug_state
-      messages = Autotuner.heuristics.map(&:debug_state)
+      messages = @heuristics.map(&:debug_state)
 
       messages.each do |msg|
         assert_instance_of(Hash, msg)

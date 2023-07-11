@@ -2,6 +2,8 @@
 
 module Autotuner
   module Configuration
+    DATA_POINTS_COUNT = 1_000
+
     attr_reader :sample_ratio
     attr_accessor :reporter
 

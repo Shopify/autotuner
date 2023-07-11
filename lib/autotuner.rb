@@ -16,6 +16,7 @@ require_relative "autotuner/gc_context"
 require_relative "autotuner/heuristics"
 require_relative "autotuner/rack_plugin"
 require_relative "autotuner/request_collector"
+require_relative "autotuner/system_context"
 require_relative "autotuner/version"
 
 module Autotuner

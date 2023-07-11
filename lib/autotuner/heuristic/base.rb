@@ -19,6 +19,10 @@ module Autotuner
         end
       end
 
+      def initialize(system_context)
+        @system_context = system_context
+      end
+
       def name
         raise NotImplementedError
       end

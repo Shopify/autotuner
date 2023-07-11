@@ -18,7 +18,6 @@ module Autotuner
 
       SIZE_POOL_COUNT = GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT]
 
-      DATA_POINTS_COUNT = 1_000
       SIZE_POOL_CONFIGURATION_DELTA_RATIO = 0.01
       SIZE_POOL_CONFIGURATION_DELTA = 1_000
 
@@ -26,14 +25,12 @@ module Autotuner
         The following suggestions adjusts the size of heap at boot time, which can improve bootup speed and reduce the time taken for the app to reach peak performance.
       MSG
 
-      def initialize
+      def initialize(_system_context)
         super
-
-        @request_time_data = DataStructure::DataPoints.new(DATA_POINTS_COUNT)
 
         @size_pools_data = Array.new(SIZE_POOL_COUNT)
         SIZE_POOL_COUNT.times do |i|
-          @size_pools_data[i] = DataStructure::DataPoints.new(DATA_POINTS_COUNT)
+          @size_pools_data[i] = DataStructure::DataPoints.new(Configuration::DATA_POINTS_COUNT)
         end
 
         @given_suggestion = false
@@ -43,18 +40,20 @@ module Autotuner
         NAME
       end
 
-      def call(request_time, _before_gc_context, after_gc_context)
+      def call(_request_time, _before_gc_context, after_gc_context)
         # We only want to collect data at boot until plateau
         return if @given_suggestion
 
-        insert_data(request_time, after_gc_context)
+        @size_pools_data.each_with_index do |data, i|
+          data.insert(after_gc_context.stat_heap[i][:heap_eden_slots])
+        end
       end
 
       def tuning_report
         # Don't give suggestions twice
         return if @given_suggestion
         # The request time should plateau
-        return unless @request_time_data.plateaued?
+        return unless @system_context.request_time_data.plateaued?
 
         @given_suggestion = true
 
@@ -90,7 +89,6 @@ module Autotuner
       def debug_state
         state = {
           given_suggestion: @given_suggestion,
-          request_time_data: @request_time_data.debug_state,
         }
 
         # Don't output @size_pools_data because there is too much data.
@@ -102,16 +100,6 @@ module Autotuner
         end
 
         state
-      end
-
-      private
-
-      def insert_data(request_time, after_gc_context)
-        @request_time_data.insert(request_time)
-
-        @size_pools_data.each_with_index do |data, i|
-          data.insert(after_gc_context.stat_heap[i][:heap_eden_slots])
-        end
       end
 
       def env_name_for_size_pool(size_pool)

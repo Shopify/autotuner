@@ -11,6 +11,10 @@ module Autotuner
       @before_gc_context = GCContext.new
       @after_gc_context = GCContext.new
 
+      @system_context = SystemContext.new
+
+      @heuristics = Autotuner.enabled_heuristics.each { |h| h.new(@system_context) }
+
       @start_time_ms = 0.0
     end
 
@@ -34,6 +38,8 @@ module Autotuner
     def after_request
       request_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond) - @start_time_ms
       @after_gc_context.update
+
+      @system_context.update(request_time, @before_gc_context, @after_gc_context)
 
       Autotuner.heuristics.each do |heuristic|
         heuristic.call(request_time, @before_gc_context, @after_gc_context)
@@ -60,7 +66,10 @@ module Autotuner
     def emit_debugging_states
       return unless Autotuner.debug_reporter
 
-      debug_states = {}
+      debug_states = {
+        system_context: @system_context.debug_state,
+      }
+
       Autotuner.heuristics.each do |h|
         debug_states[h.name] = h.debug_state
       end

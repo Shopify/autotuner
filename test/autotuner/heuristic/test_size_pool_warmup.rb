@@ -6,7 +6,8 @@ module Autotuner
   module Heuristic
     class TestSizePoolWarmup < Minitest::Test
       def setup
-        @size_pool_warmup = SizePoolWarmup.new
+        @system_context = SystemContext.new
+        @size_pool_warmup = SizePoolWarmup.new(@system_context)
         @gc_context = GCContext.new
       end
 
@@ -61,9 +62,10 @@ module Autotuner
 
         # Insert non-platueau data
         request_time = 0
-        (SizePoolWarmup::DATA_POINTS_COUNT + 1).times do |_i|
+        (Configuration::DATA_POINTS_COUNT + 1).times do |_i|
           request_time += 10
 
+          @system_context.update(request_time, @gc_context, @gc_context)
           @size_pool_warmup.call(request_time, @gc_context, @gc_context)
         end
 
@@ -91,7 +93,6 @@ module Autotuner
         state = @size_pool_warmup.debug_state
 
         assert(state[:given_suggestion])
-        assert_instance_of(Hash, state[:request_time_data])
       end
 
       def test_debug_state_with_initial_configuration
@@ -106,7 +107,6 @@ module Autotuner
         state = @size_pool_warmup.debug_state
 
         assert(state[:given_suggestion])
-        assert_instance_of(Hash, state[:request_time_data])
 
         assert_equal("10000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_40_SLOTS]"])
         assert_equal("20000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_160_SLOTS]"])
@@ -119,7 +119,6 @@ module Autotuner
         state = @size_pool_warmup.debug_state
 
         refute(state[:given_suggestion])
-        assert_instance_of(Hash, state[:request_time_data])
       end
 
       private
@@ -129,8 +128,10 @@ module Autotuner
           @gc_context.stat_heap[i][:heap_eden_slots] = size_pool_slots ? size_pool_slots[i] : rand(100)
         end
 
-        (SizePoolWarmup::DATA_POINTS_COUNT + 1).times do |_i|
-          @size_pool_warmup.call(100 + rand(2), @gc_context, @gc_context)
+        (Configuration::DATA_POINTS_COUNT + 1).times do |_i|
+          request_time = 100 + rand(2)
+          @system_context.update(request_time, @gc_context, @gc_context)
+          @size_pool_warmup.call(request_time, @gc_context, @gc_context)
         end
       end
     end

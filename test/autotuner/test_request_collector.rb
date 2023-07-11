@@ -19,7 +19,7 @@ module Autotuner
         attr_reader :calls
 
         def initialize
-          super
+          super(nil)
 
           @calls = []
           @call_klass = Data.define(:request_time, :before_gc_context, :after_gc_context)
@@ -69,7 +69,7 @@ module Autotuner
         attr_reader :tuning_report_calls
 
         def initialize
-          super
+          super(nil)
 
           @tuning_report_calls = 0
         end
@@ -125,7 +125,7 @@ module Autotuner
         attr_reader :name, :debug_state
 
         def initialize(name, debug_state)
-          super()
+          super(nil)
 
           @name = name
           @debug_state = debug_state
@@ -150,7 +150,11 @@ module Autotuner
 
       Autotuner.debug_reporter
         .expects(:call)
-        .with({ "Heuristic1" => heuristics[0].debug_state, "Heuristic2" => heuristics[1].debug_state })
+        .with do |value|
+          value[:system_context].is_a?(Hash) &&
+            value["Heuristic1"] == heuristics[0].debug_state &&
+            value["Heuristic2"] == heuristics[1].debug_state
+        end
         .once
       @request_collector.request {}
     ensure

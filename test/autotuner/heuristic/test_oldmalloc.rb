@@ -4,7 +4,7 @@ module Autotuner
   module Heuristic
     class TestOldmalloc < Minitest::Test
       def setup
-        @oldmalloc = Oldmalloc.new
+        @oldmalloc = Oldmalloc.new(nil)
         @before_gc_context = GCContext.new
         @after_gc_context = GCContext.new
 

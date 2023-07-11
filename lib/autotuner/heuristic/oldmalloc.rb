@@ -28,7 +28,7 @@ module Autotuner
       attr_reader :major_gc_count
       attr_reader :oldmalloc_gc_count
 
-      def initialize
+      def initialize(_system_context)
         super
 
         @major_gc_count = 0

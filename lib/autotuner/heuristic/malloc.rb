@@ -29,7 +29,7 @@ module Autotuner
       attr_reader :minor_gc_count
       attr_reader :malloc_gc_count
 
-      def initialize
+      def initialize(_system_context)
         super
 
         @minor_gc_count = 0
