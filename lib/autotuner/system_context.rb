@@ -8,8 +8,8 @@ module Autotuner
       @request_time_data = DataStructure::DataPoints.new(Configuration::DATA_POINTS_COUNT)
     end
 
-    def update(request_time, _before_gc_context, _after_gc_context)
-      @request_time_data.insert(request_time)
+    def update(request_context)
+      @request_time_data.insert(request_context.request_time)
     end
 
     def debug_state

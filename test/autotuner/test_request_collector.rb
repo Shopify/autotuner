@@ -14,7 +14,13 @@ module Autotuner
       Autotuner.reporter = @original_reporter
     end
 
-    def test_request_calls_heuristics_with_request_time_and_gc_context
+    def test_request_updates_request_context
+      RequestContext.any_instance.expects(:before_request).once
+
+      @request_collector.request { RequestContext.any_instance.expects(:after_request).once }
+    end
+
+    def test_request_calls_heuristics_with_request_context
       mock_heuristic = Class.new(Heuristic::Base) do
         attr_reader :calls
 
@@ -22,44 +28,21 @@ module Autotuner
           super(nil)
 
           @calls = []
-          @call_klass = Data.define(:request_time, :before_gc_context, :after_gc_context)
         end
 
-        def call(request_time, before_gc_context, after_gc_context)
-          @calls << @call_klass.new(request_time, before_gc_context, after_gc_context)
+        def call(request_context)
+          @calls << request_context
         end
       end
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
+      @request_collector.stubs(:heuristics).returns(heuristics)
 
-      Autotuner.stubs(:heuristics).returns(heuristics)
-
-      Process.stubs(:clock_gettime).with(Process::CLOCK_MONOTONIC, :float_millisecond)
-        .returns(123.0).then.returns(153.0)
-      @request_collector.request { GC.start }
+      @request_collector.request {}
 
       heuristics.each do |h|
         assert_equal(1, h.calls.length)
-        assert_equal(30.0, h.calls[-1].request_time)
-        assert_instance_of(GCContext, h.calls[-1].before_gc_context)
-        assert_instance_of(GCContext, h.calls[-1].after_gc_context)
-
-        # Ran at least 1 GC in the request
-        assert_operator(h.calls[-1].before_gc_context.stat[:count], :<, h.calls[-1].after_gc_context.stat[:count])
-      end
-
-      Process.stubs(:clock_gettime).with(Process::CLOCK_MONOTONIC, :float_millisecond)
-        .returns(400.0).then.returns(500.0)
-      @request_collector.request { GC.start }
-
-      heuristics.each do |h|
-        assert_equal(2, h.calls.length)
-        assert_equal(100.0, h.calls[-1].request_time)
-        assert_instance_of(GCContext, h.calls[-1].before_gc_context)
-        assert_instance_of(GCContext, h.calls[-1].after_gc_context)
-
-        # Ran at least 1 GC in the request
-        assert_operator(h.calls[-1].before_gc_context.stat[:count], :<, h.calls[-1].after_gc_context.stat[:count])
+        assert_instance_of(RequestContext, h.calls[0])
       end
     end
 
@@ -74,7 +57,7 @@ module Autotuner
           @tuning_report_calls = 0
         end
 
-        def call(request_time, before_gc_context, after_gc_context); end
+        def call(request_context); end
 
         def tuning_report
           @tuning_report_calls += 1
@@ -86,7 +69,7 @@ module Autotuner
       Autotuner.reporter = mock
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
-      Autotuner.stubs(:heuristics).returns(heuristics)
+      @request_collector.stubs(:heuristics).returns(heuristics)
 
       (RequestCollector::HEURISTICS_POLLING_FREQUENCY - 1).times do
         @request_collector.request {}
@@ -131,7 +114,7 @@ module Autotuner
           @debug_state = debug_state
         end
 
-        def call(request_time, before_gc_context, after_gc_context); end
+        def call(request_context); end
 
         def tuning_report
           nil
@@ -142,7 +125,7 @@ module Autotuner
       Autotuner.debug_reporter = mock
 
       heuristics = [mock_heuristic.new("Heuristic1", { foo: "bar" }), mock_heuristic.new("Heuristic2", { bar: "baz" })]
-      Autotuner.stubs(:heuristics).returns(heuristics)
+      @request_collector.stubs(:heuristics).returns(heuristics)
 
       (RequestCollector::DEBUG_EMIT_FREQUENCY - 1).times do
         @request_collector.request {}

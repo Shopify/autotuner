@@ -5,11 +5,11 @@ module Autotuner
     class TestOldmalloc < Minitest::Test
       def setup
         @oldmalloc = Oldmalloc.new(nil)
-        @before_gc_context = GCContext.new
-        @after_gc_context = GCContext.new
+        @request_context = RequestContext.new
 
-        @after_gc_context.stat[:major_gc_count] = @before_gc_context.stat[:major_gc_count] + 1
-        @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+        @request_context.after_gc_context.stat[:major_gc_count] =
+          @request_context.before_gc_context.stat[:major_gc_count] + 1
+        @request_context.after_gc_context.latest_gc_info[:major_by] = :oldmalloc
       end
 
       def test_enabled?
@@ -17,23 +17,24 @@ module Autotuner
       end
 
       def test_call_increments_major_and_malloc_counts
-        @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+        @oldmalloc.call(@request_context)
 
         assert_equal(1, @oldmalloc.major_gc_count)
         assert_equal(1, @oldmalloc.oldmalloc_gc_count)
       end
 
       def test_call_increments_major_count
-        @after_gc_context.latest_gc_info[:major_by] = :force
-        @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+        @request_context.after_gc_context.latest_gc_info[:major_by] = :force
+        @oldmalloc.call(@request_context)
 
         assert_equal(1, @oldmalloc.major_gc_count)
         assert_equal(0, @oldmalloc.oldmalloc_gc_count)
       end
 
       def test_call_does_not_increment_when_no_major_gc_ran
-        @after_gc_context.stat[:major_gc_count] = @before_gc_context.stat[:major_gc_count]
-        @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+        @request_context.after_gc_context.stat[:major_gc_count] =
+          @request_context.before_gc_context.stat[:major_gc_count]
+        @oldmalloc.call(@request_context)
 
         assert_equal(0, @oldmalloc.major_gc_count)
         assert_equal(0, @oldmalloc.oldmalloc_gc_count)
@@ -41,11 +42,11 @@ module Autotuner
 
       def test_tuning_report
         Oldmalloc::MIN_OLDMALLOC_GC.times do
-          @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+          @oldmalloc.call(@request_context)
 
-          @after_gc_context.latest_gc_info[:major_by] = :nofree
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @oldmalloc.call(@request_context)
         end
 
         report = @oldmalloc.tuning_report
@@ -66,11 +67,11 @@ module Autotuner
         ENV["RUBY_GC_OLDMALLOC_LIMIT_MAX"] = "200"
 
         Oldmalloc::MIN_OLDMALLOC_GC.times do
-          @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+          @oldmalloc.call(@request_context)
 
-          @after_gc_context.latest_gc_info[:major_by] = :nofree
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @oldmalloc.call(@request_context)
         end
 
         report = @oldmalloc.tuning_report
@@ -92,7 +93,7 @@ module Autotuner
 
       def test_tuning_report_below_min_oldmalloc
         (Oldmalloc::MIN_OLDMALLOC_GC - 1).times do
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @oldmalloc.call(@request_context)
         end
 
         assert_nil(@oldmalloc.tuning_report)
@@ -100,12 +101,12 @@ module Autotuner
 
       def test_tuning_report_below_ratio
         Oldmalloc::MIN_OLDMALLOC_GC.times do
-          @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+          @oldmalloc.call(@request_context)
 
           (1 / Oldmalloc::OLDMALLOC_GC_RATIO_THRESHOLD).to_i.times do
-            @after_gc_context.latest_gc_info[:major_by] = :nofree
-            @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+            @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+            @oldmalloc.call(@request_context)
           end
         end
 
@@ -114,11 +115,11 @@ module Autotuner
 
       def test_tuning_report_does_not_give_suggestion_twice
         Oldmalloc::MIN_OLDMALLOC_GC.times do
-          @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+          @oldmalloc.call(@request_context)
 
-          @after_gc_context.latest_gc_info[:major_by] = :nofree
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @oldmalloc.call(@request_context)
         end
 
         refute_nil(@oldmalloc.tuning_report)
@@ -127,11 +128,11 @@ module Autotuner
 
       def test_debug_state
         Oldmalloc::MIN_OLDMALLOC_GC.times do
-          @after_gc_context.latest_gc_info[:major_by] = :oldmalloc
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :oldmalloc
+          @oldmalloc.call(@request_context)
 
-          @after_gc_context.latest_gc_info[:major_by] = :nofree
-          @oldmalloc.call(10.0, @before_gc_context, @after_gc_context)
+          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @oldmalloc.call(@request_context)
         end
 
         @oldmalloc.tuning_report

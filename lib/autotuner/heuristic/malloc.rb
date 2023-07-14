@@ -42,15 +42,18 @@ module Autotuner
         NAME
       end
 
-      def call(_request_time, before_gc_context, after_gc_context)
+      def call(request_context)
         # gc_by is only useful if we ran at least one minor GC during the request.
-        return if after_gc_context.stat[:minor_gc_count] == before_gc_context.stat[:minor_gc_count]
+        if request_context.after_gc_context.stat[:minor_gc_count] ==
+            request_context.before_gc_context.stat[:minor_gc_count]
+          return
+        end
         # gc_by is only useful if it wasn't a major GC.
         # It is a major GC when where is a major_by reason set.
-        return if after_gc_context.latest_gc_info[:major_by]
+        return if request_context.after_gc_context.latest_gc_info[:major_by]
 
         @minor_gc_count += 1
-        @malloc_gc_count += 1 if after_gc_context.latest_gc_info[:gc_by] == :malloc
+        @malloc_gc_count += 1 if request_context.after_gc_context.latest_gc_info[:gc_by] == :malloc
       end
 
       def tuning_report

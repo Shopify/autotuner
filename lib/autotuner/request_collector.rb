@@ -5,17 +5,16 @@ module Autotuner
     HEURISTICS_POLLING_FREQUENCY = 100
     DEBUG_EMIT_FREQUENCY = 1000
 
+    attr_reader :heuristics
+
     def initialize
       @request_count = 0
 
-      @before_gc_context = GCContext.new
-      @after_gc_context = GCContext.new
+      @request_context = RequestContext.new
 
       @system_context = SystemContext.new
 
-      @heuristics = Autotuner.enabled_heuristics.each { |h| h.new(@system_context) }
-
-      @start_time_ms = 0.0
+      @heuristics = Autotuner.enabled_heuristics.map { |h| h.new(@system_context) }
     end
 
     def request
@@ -29,20 +28,18 @@ module Autotuner
     private
 
     def before_request
-      @before_gc_context.update
-      @start_time_ms = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
+      @request_context.before_request
 
       @request_count += 1
     end
 
     def after_request
-      request_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond) - @start_time_ms
-      @after_gc_context.update
+      @request_context.after_request
 
-      @system_context.update(request_time, @before_gc_context, @after_gc_context)
+      @system_context.update(@request_context)
 
-      Autotuner.heuristics.each do |heuristic|
-        heuristic.call(request_time, @before_gc_context, @after_gc_context)
+      heuristics.each do |heuristic|
+        heuristic.call(@request_context)
       end
 
       emit_heuristic_reports if @request_count % HEURISTICS_POLLING_FREQUENCY == 0
@@ -50,7 +47,7 @@ module Autotuner
     end
 
     def emit_heuristic_reports
-      Autotuner.heuristics.each do |heuristic|
+      heuristics.each do |heuristic|
         report = heuristic.tuning_report
 
         next unless report
@@ -70,7 +67,7 @@ module Autotuner
         system_context: @system_context.debug_state,
       }
 
-      Autotuner.heuristics.each do |h|
+      heuristics.each do |h|
         debug_states[h.name] = h.debug_state
       end
 

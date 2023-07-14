@@ -6,10 +6,13 @@ module Autotuner
   class TestSystemContext < Minitest::Test
     def setup
       @system_context = SystemContext.new
+      @request_context = RequestContext.new
     end
 
     def test_update
-      @system_context.update(10.123, nil, nil)
+      @request_context.stubs(:request_time).returns(10.123)
+
+      @system_context.update(@request_context)
 
       assert_equal(1, @system_context.request_time_data.length)
       assert_equal(10.123, @system_context.request_time_data.samples[0])

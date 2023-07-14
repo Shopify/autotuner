@@ -8,7 +8,7 @@ module Autotuner
       def setup
         @system_context = SystemContext.new
         @size_pool_warmup = SizePoolWarmup.new(@system_context)
-        @gc_context = GCContext.new
+        @request_context = RequestContext.new
       end
 
       def test_enabled?
@@ -26,7 +26,7 @@ module Autotuner
         assert_equal(5, report.configured_value.length)
         [40, 80, 160, 320, 640].each_with_index do |slot_size, i|
           assert_equal("RUBY_GC_HEAP_INIT_SIZE_#{slot_size}_SLOTS", report.env_name[i])
-          assert_equal(@gc_context.stat_heap[i][:heap_eden_slots], report.suggested_value[i])
+          assert_equal(@request_context.after_gc_context.stat_heap[i][:heap_eden_slots], report.suggested_value[i])
           assert_nil(report.configured_value[i])
         end
       end
@@ -64,9 +64,10 @@ module Autotuner
         request_time = 0
         (Configuration::DATA_POINTS_COUNT + 1).times do |_i|
           request_time += 10
+          @request_context.stubs(:request_time).returns(request_time)
 
-          @system_context.update(request_time, @gc_context, @gc_context)
-          @size_pool_warmup.call(request_time, @gc_context, @gc_context)
+          @system_context.update(@request_context)
+          @size_pool_warmup.call(@request_context)
         end
 
         report = @size_pool_warmup.tuning_report
@@ -125,13 +126,14 @@ module Autotuner
 
       def insert_plateau_data(size_pool_slots = nil)
         SizePoolWarmup::SIZE_POOL_COUNT.times do |i|
-          @gc_context.stat_heap[i][:heap_eden_slots] = size_pool_slots ? size_pool_slots[i] : rand(100)
+          @request_context.after_gc_context.stat_heap[i][:heap_eden_slots] =
+            size_pool_slots ? size_pool_slots[i] : rand(100)
         end
 
         (Configuration::DATA_POINTS_COUNT + 1).times do |_i|
-          request_time = 100 + rand(2)
-          @system_context.update(request_time, @gc_context, @gc_context)
-          @size_pool_warmup.call(request_time, @gc_context, @gc_context)
+          @request_context.stubs(:request_time).returns(100 + rand(2))
+          @system_context.update(@request_context)
+          @size_pool_warmup.call(@request_context)
         end
       end
     end

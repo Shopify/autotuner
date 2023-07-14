@@ -40,12 +40,12 @@ module Autotuner
         NAME
       end
 
-      def call(_request_time, _before_gc_context, after_gc_context)
+      def call(request_context)
         # We only want to collect data at boot until plateau
         return if @given_suggestion
 
         @size_pools_data.each_with_index do |data, i|
-          data.insert(after_gc_context.stat_heap[i][:heap_eden_slots])
+          data.insert(request_context.after_gc_context.stat_heap[i][:heap_eden_slots])
         end
       end
 
