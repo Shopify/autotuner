@@ -55,6 +55,22 @@ module Autotuner
         ENV.replace(original_env)
       end
 
+      def test_tuning_report_with_perfect_configured_values
+        original_env = ENV.to_h
+
+        configured_values = [10_000, 20_000, 30_000, 40_000, 50_000]
+        configured_values.each_with_index do |val, i|
+          size = 40 * (2**i)
+          ENV["RUBY_GC_HEAP_INIT_SIZE_#{size}_SLOTS"] = val.to_s
+        end
+
+        insert_plateau_data(configured_values)
+
+        assert_nil(@size_pool_warmup.tuning_report)
+      ensure
+        ENV.replace(original_env)
+      end
+
       def test_tuning_report_when_not_ready
         report = @size_pool_warmup.tuning_report
 

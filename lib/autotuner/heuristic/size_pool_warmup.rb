@@ -83,6 +83,9 @@ module Autotuner
           configured_values << configured_value
         end
 
+        # Don't generate report if there is nothing to report
+        return if suggested_values.empty?
+
         Report::MultipleEnvironmentVariables.new(REPORT_ASSIST_MESSAGE, env_names, suggested_values, configured_values)
       end
 
