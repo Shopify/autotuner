@@ -24,8 +24,8 @@ module Autotuner
         assert_equal(5, report.env_name.length)
         assert_equal(5, report.suggested_value.length)
         assert_equal(5, report.configured_value.length)
-        [40, 80, 160, 320, 640].each_with_index do |slot_size, i|
-          assert_equal("RUBY_GC_HEAP_INIT_SIZE_#{slot_size}_SLOTS", report.env_name[i])
+        HeapSizeWarmup::HEAP_NAMES.each_with_index do |heap_name, i|
+          assert_equal("RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS", report.env_name[i])
           assert_equal(@request_context.after_gc_context.stat_heap[i][:heap_eden_slots], report.suggested_value[i])
           assert_nil(report.configured_value[i])
         end
@@ -35,9 +35,9 @@ module Autotuner
         original_env = ENV.to_h
 
         # Correct configured value
-        ENV["RUBY_GC_HEAP_INIT_SIZE_80_SLOTS"] = "20000"
+        ENV["RUBY_GC_HEAP_1_INIT_SLOTS"] = "20000"
         # Incorrect configured value
-        ENV["RUBY_GC_HEAP_INIT_SIZE_320_SLOTS"] = "50000"
+        ENV["RUBY_GC_HEAP_3_INIT_SLOTS"] = "50000"
 
         insert_plateau_data([10_000, 20_000, 30_000, 40_000, 50_000])
 
@@ -47,8 +47,9 @@ module Autotuner
         assert_equal(4, report.env_name.length)
         assert_equal(4, report.suggested_value.length)
         assert_equal(4, report.configured_value.length)
-        [40, 160, 320, 640].each_with_index do |slot_size, i|
-          assert_equal("RUBY_GC_HEAP_INIT_SIZE_#{slot_size}_SLOTS", report.env_name[i])
+
+        (HeapSizeWarmup::HEAP_NAMES - ["1"]).each_with_index do |heap_name, i|
+          assert_equal("RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS", report.env_name[i])
         end
         assert_equal(50_000, report.configured_value[2])
       ensure
@@ -58,10 +59,9 @@ module Autotuner
       def test_tuning_report_with_perfect_configured_values
         original_env = ENV.to_h
 
-        configured_values = [10_000, 20_000, 30_000, 40_000, 50_000]
-        configured_values.each_with_index do |val, i|
-          size = 40 * (2**i)
-          ENV["RUBY_GC_HEAP_INIT_SIZE_#{size}_SLOTS"] = val.to_s
+        configured_values = HeapSizeWarmup::HEAP_NAMES.length.times.map { |i| i * 10_000 }
+        HeapSizeWarmup::HEAP_NAMES.each_with_index do |heap_name, i|
+          ENV["RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS"] = configured_values[i].to_s
         end
 
         insert_plateau_data(configured_values)
@@ -115,8 +115,8 @@ module Autotuner
       def test_debug_state_with_initial_configuration
         original_env = ENV.to_h
 
-        ENV["RUBY_GC_HEAP_INIT_SIZE_40_SLOTS"] = "10000"
-        ENV["RUBY_GC_HEAP_INIT_SIZE_160_SLOTS"] = "20000"
+        ENV["RUBY_GC_HEAP_0_INIT_SLOTS"] = "10000"
+        ENV["RUBY_GC_HEAP_2_INIT_SLOTS"] = "20000"
 
         insert_plateau_data
 
@@ -125,9 +125,9 @@ module Autotuner
 
         assert(state[:given_suggestion])
 
-        assert_equal("10000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_40_SLOTS]"])
-        assert_equal("20000", state[:"ENV[RUBY_GC_HEAP_INIT_SIZE_160_SLOTS]"])
-        refute(state.key?(:"ENV[RUBY_GC_HEAP_INIT_SIZE_80_SLOTS]"))
+        assert_equal("10000", state[:"ENV[RUBY_GC_HEAP_0_INIT_SLOTS]"])
+        assert_equal("20000", state[:"ENV[RUBY_GC_HEAP_2_INIT_SLOTS]"])
+        refute(state.key?(:"ENV[RUBY_GC_HEAP_1_INIT_SLOTS]"))
       ensure
         ENV.replace(original_env)
       end
@@ -141,7 +141,7 @@ module Autotuner
       private
 
       def insert_plateau_data(heap_slots = nil)
-        HeapSizeWarmup::HEAP_COUNT.times do |i|
+        HeapSizeWarmup::HEAP_NAMES.length.times do |i|
           @request_context.after_gc_context.stat_heap[i][:heap_eden_slots] =
             heap_slots ? heap_slots[i] : rand(100)
         end

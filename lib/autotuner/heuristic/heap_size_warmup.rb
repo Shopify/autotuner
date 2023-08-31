@@ -7,7 +7,7 @@ module Autotuner
         private
 
         def supported?
-          # Ruby 3.3.0 and later have support RUBY_GC_HEAP_INIT_SIZE_%d_SLOTS
+          # Ruby 3.3.0 and later have support RUBY_GC_HEAP_%d_INIT_SLOTS
           # RUBY_VERSION >= "3.3.0"
           # TODO: use the check above
           true
@@ -16,7 +16,7 @@ module Autotuner
 
       NAME = "HeapSizeWarmup"
 
-      HEAP_COUNT = GC::INTERNAL_CONSTANTS[:SIZE_POOL_COUNT]
+      HEAP_NAMES = GC.stat_heap.keys.map(&:to_s).freeze
 
       HEAP_SIZE_CONFIGURATION_DELTA_RATIO = 0.01
       HEAP_SIZE_CONFIGURATION_DELTA = 1_000
@@ -28,8 +28,8 @@ module Autotuner
       def initialize(_system_context)
         super
 
-        @heaps_data = Array.new(HEAP_COUNT)
-        HEAP_COUNT.times do |i|
+        @heaps_data = Array.new(HEAP_NAMES.length)
+        HEAP_NAMES.length.times do |i|
           @heaps_data[i] = DataStructure::DataPoints.new(Configuration::DATA_POINTS_COUNT)
         end
 
@@ -60,8 +60,8 @@ module Autotuner
         env_names = []
         suggested_values = []
         configured_values = []
-        HEAP_COUNT.times do |i|
-          env_name = env_name_for_heap(i)
+        HEAP_NAMES.each_with_index do |heap_name, i|
+          env_name = env_name_for_heap(heap_name)
 
           data = @heaps_data[i]
           suggested_value = data.samples[data.length - 1].to_i
@@ -96,8 +96,8 @@ module Autotuner
 
         # Don't output @heaps_data because there is too much data.
 
-        HEAP_COUNT.times do |i|
-          env_var = env_name_for_heap(i)
+        HEAP_NAMES.each do |heap_name|
+          env_var = env_name_for_heap(heap_name)
           env_val = ENV[env_var]
           state[:"ENV[#{env_var}]"] = env_val if env_val
         end
@@ -105,10 +105,8 @@ module Autotuner
         state
       end
 
-      def env_name_for_heap(heap)
-        slot_size = GC::INTERNAL_CONSTANTS[:BASE_SLOT_SIZE] * (2**heap)
-
-        "RUBY_GC_HEAP_INIT_SIZE_#{slot_size}_SLOTS"
+      def env_name_for_heap(heap_name)
+        "RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS"
       end
     end
   end
