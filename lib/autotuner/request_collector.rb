@@ -44,6 +44,7 @@ module Autotuner
 
       emit_heuristic_reports if @request_count % HEURISTICS_POLLING_FREQUENCY == 0
       emit_debugging_states if @request_count % DEBUG_EMIT_FREQUENCY == 0
+      emit_metrics
     end
 
     def emit_heuristic_reports
@@ -72,6 +73,27 @@ module Autotuner
       end
 
       Autotuner.debug_reporter.call(debug_states)
+    end
+
+    def emit_metrics
+      return unless Autotuner.metrics_reporter
+
+      metrics = {
+        # Diff metrics
+        "diff.time" => gc_stat_diff(:time),
+        "diff.minor_gc_count" => gc_stat_diff(:minor_gc_count),
+        "diff.major_gc_count" => gc_stat_diff(:major_gc_count),
+        "request_time" => @request_context.request_time,
+
+        # Metrics
+        "heap_pages" => @request_context.after_gc_context.stat[:heap_eden_pages],
+      }
+
+      Autotuner.metrics_reporter.call(metrics)
+    end
+
+    def gc_stat_diff(stat)
+      @request_context.after_gc_context.stat[stat] - @request_context.before_gc_context.stat[stat]
     end
   end
 end

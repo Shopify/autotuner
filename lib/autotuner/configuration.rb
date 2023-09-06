@@ -6,6 +6,7 @@ module Autotuner
 
     attr_reader :sample_ratio
     attr_accessor :reporter
+    attr_accessor :metrics_reporter
 
     # Set this callback to report debug information periodically.
     attr_accessor :debug_reporter

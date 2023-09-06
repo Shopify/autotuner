@@ -143,5 +143,33 @@ module Autotuner
     ensure
       Autotuner.debug_reporter = orig_debug_reporter
     end
+
+    def test_request_calls_metrics_reporter
+      orig_metrics_reporter = Autotuner.metrics_reporter
+
+      metrics = nil
+      Autotuner.metrics_reporter = proc do |m|
+        metrics = m
+      end
+
+      @request_collector.request {}
+
+      refute_nil(metrics)
+      ["diff.time", "diff.minor_gc_count", "diff.major_gc_count", "request_time", "request_time"].each do |key|
+        assert_operator(metrics[key], :>=, 0)
+      end
+
+      # Run a major GC
+      @request_collector.request { GC.start }
+
+      assert_operator(metrics["diff.major_gc_count"], :>=, 1)
+
+      # Run a minor GC
+      @request_collector.request { GC.start(full_mark: false) }
+
+      assert_operator(metrics["diff.minor_gc_count"], :>=, 1)
+    ensure
+      Autotuner.metrics_reporter = orig_metrics_reporter
+    end
   end
 end
