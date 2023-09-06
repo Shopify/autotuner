@@ -76,8 +76,8 @@ module Autotuner
           MSG
           [LIMIT_ENV, LIMIT_MAX_ENV],
           # Suggest to double the limit and max
-          [configured_malloc_limit * 2, configured_malloc_limit_max * 2],
-          [ENV[LIMIT_ENV]&.to_i, ENV[LIMIT_MAX_ENV]&.to_i],
+          [suggested_malloc_limit, suggested_malloc_limit_max],
+          [configured_malloc_limit, configured_malloc_limit_max],
         )
       end
 
@@ -92,11 +92,31 @@ module Autotuner
       private
 
       def configured_malloc_limit
-        ENV[LIMIT_ENV]&.to_i || DEFAULT_MALLOC_LIMIT
+        ENV[LIMIT_ENV]&.to_i
       end
 
       def configured_malloc_limit_max
-        ENV[LIMIT_MAX_ENV]&.to_i || DEFAULT_MALLOC_LIMIT_MAX
+        ENV[LIMIT_MAX_ENV]&.to_i
+      end
+
+      def suggested_malloc_limit
+        if !configured_malloc_limit
+          DEFAULT_MALLOC_LIMIT * 2
+        elsif configured_malloc_limit < DEFAULT_MALLOC_LIMIT
+          DEFAULT_MALLOC_LIMIT
+        else
+          configured_malloc_limit * 2
+        end
+      end
+
+      def suggested_malloc_limit_max
+        if !configured_malloc_limit_max
+          DEFAULT_MALLOC_LIMIT_MAX * 2
+        elsif configured_malloc_limit_max < DEFAULT_MALLOC_LIMIT_MAX
+          DEFAULT_MALLOC_LIMIT_MAX
+        else
+          configured_malloc_limit_max * 2
+        end
       end
     end
   end

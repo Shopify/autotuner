@@ -72,8 +72,11 @@ module Autotuner
       def test_tuning_report_with_configured_values
         original_env = ENV.to_h
 
-        ENV["RUBY_GC_MALLOC_LIMIT"] = "100"
-        ENV["RUBY_GC_MALLOC_LIMIT_MAX"] = "200"
+        configured_limit = 100_000_000
+        configured_limit_max = 200_000_000
+
+        ENV["RUBY_GC_MALLOC_LIMIT"] = configured_limit.to_s
+        ENV["RUBY_GC_MALLOC_LIMIT_MAX"] = configured_limit_max.to_s
 
         Malloc::MIN_MALLOC_GC.times do
           @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
@@ -88,10 +91,40 @@ module Autotuner
         assert_includes(report.assist_message, "50.00%")
         assert_equal([Malloc::LIMIT_ENV, Malloc::LIMIT_MAX_ENV], report.env_name)
         assert_equal(
-          [200, 400],
+          [configured_limit * 2, configured_limit_max * 2],
           report.suggested_value,
         )
-        assert_equal([100, 200], report.configured_value)
+        assert_equal([configured_limit, configured_limit_max], report.configured_value)
+      ensure
+        ENV.replace(original_env)
+      end
+
+      def test_tuning_report_with_configured_values_lower_than_default
+        original_env = ENV.to_h
+
+        configured_limit = 1
+        configured_limit_max = 2
+
+        ENV["RUBY_GC_MALLOC_LIMIT"] = configured_limit.to_s
+        ENV["RUBY_GC_MALLOC_LIMIT_MAX"] = configured_limit_max.to_s
+
+        Malloc::MIN_MALLOC_GC.times do
+          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@request_context)
+
+          @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+          @malloc.call(@request_context)
+        end
+
+        report = @malloc.tuning_report
+
+        assert_includes(report.assist_message, "50.00%")
+        assert_equal([Malloc::LIMIT_ENV, Malloc::LIMIT_MAX_ENV], report.env_name)
+        assert_equal(
+          [Malloc::DEFAULT_MALLOC_LIMIT, Malloc::DEFAULT_MALLOC_LIMIT_MAX],
+          report.suggested_value,
+        )
+        assert_equal([configured_limit, configured_limit_max], report.configured_value)
       ensure
         ENV.replace(original_env)
       end
