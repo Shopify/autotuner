@@ -11,8 +11,6 @@ module Autotuner
         end
       end
 
-      NAME = "Malloc"
-
       MALLOC_GC_RATIO_THRESHOLD = 0.1
       MIN_MALLOC_GC = 10
 
@@ -39,7 +37,7 @@ module Autotuner
       end
 
       def name
-        NAME
+        "Malloc"
       end
 
       def call(request_context)

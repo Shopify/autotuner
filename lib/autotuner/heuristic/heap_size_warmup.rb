@@ -14,8 +14,6 @@ module Autotuner
         end
       end
 
-      NAME = "HeapSizeWarmup"
-
       HEAP_NAMES = GC.stat_heap.keys.map(&:to_s).freeze
 
       HEAP_SIZE_CONFIGURATION_DELTA_RATIO = 0.01
@@ -37,7 +35,7 @@ module Autotuner
       end
 
       def name
-        NAME
+        "HeapSizeWarmup"
       end
 
       def call(request_context)

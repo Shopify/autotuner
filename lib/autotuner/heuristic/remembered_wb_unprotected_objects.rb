@@ -14,8 +14,6 @@ module Autotuner
         end
       end
 
-      NAME = "WBUnprotectedObjects"
-
       WB_UNPROTECTED_GC_RATIO_THRESHOLD = 0.1
       MIN_WB_UNPROTECTED_GC = 10
 
@@ -38,7 +36,7 @@ module Autotuner
       end
 
       def name
-        NAME
+        "WBUnprotectedObjects"
       end
 
       def call(request_context)

@@ -11,8 +11,6 @@ module Autotuner
         end
       end
 
-      NAME = "Oldmalloc"
-
       OLDMALLOC_GC_RATIO_THRESHOLD = 0.01
       MIN_OLDMALLOC_GC = 10
 
@@ -38,7 +36,7 @@ module Autotuner
       end
 
       def name
-        NAME
+        "Oldmalloc"
       end
 
       def call(request_context)
