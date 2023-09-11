@@ -1,10 +1,10 @@
 # Autotuner
 
-Autotuner is a tool to help you tune the garbage collector of your Rails app. Autotuner plugs into Rack as a middleware and will collect data from the garbage collector between requests. It will then intelligently provide suggestions to tune the garbage collector for faster bootup, warmup, and response times.
+Autotuner is a tool designed to help you tune the garbage collector of your Rails app. Autotuner integrates into Rack as a middleware and collects data from the garbage collector between requests. It will then intelligently provide suggestions to tune the garbage collector for faster bootup, warmup, and response times.
 
 ## Installation
 
-Install the gem and add to the application's Gemfile by executing:
+To install the gem, add it to the application's Gemfile by executing:
 
 ```
 $ bundle add autotuner
@@ -39,6 +39,24 @@ $ bundle add autotuner
     end
   end
   ```
+
+## Experimenting with tuning suggestions
+
+While autotuner aims to comprehensively analyze your traffic to give the suggestion, not all of the suggestions it provides will be perfect. There will be cases where the suggestions it provides may result in undesired outcomes. Therefore, it is NOT recommended to blindly apply suggestions from autotuner, but rather use a scientific approach to experiment with the suggestions. There are a few steps to this.
+
+1. Before any suggestions from autotuner is applied, make sure you are collecting system metrics from your Rails app. Send this data to your observability service so you can measure average, 50th percentile, 99th percentile, and 99.9th percentile data.
+
+   You can use `Autotuner.metrics_reporter` to collect important metrics from your app, including: GC time, number of major and minor GC cycles, request time, and number of heap pages allocated.
+1. Establish an experimental group of machines/containers in production. Since response times and the state of the garbage collector are highly variable, it's much easier and more reliable to compare two groups at the same time rather than across different time periods with different traffic patterns.
+
+   You can do this by assigning a random number to each machine/container at boot, and using that number to determine the group it belongs in. Depending on the traffic of your app, you may want to place between 5% (high traffic apps) to 50% (low traffic apps) in the experimental group.
+1. Apply suggestions from Autotuner one at a time in the experimental group, and observe the impacts of the tuning. You may want to observe the impact over a few days to a week, including warmup performance after a new deploy and long periods of no deploys (such as a weekend).
+
+   If you observe that the suggestion provides positive improvements, then also apply the suggestion to the default group and experiment with the next tuning suggestion provided by Autotuner.
+
+   Some suggestions may provide a trade-off. For example, it may improve average response time at the expense of worse extremes (99th or 99.9th percentile). It is up to you to determine whether the trade-off is worth it.
+
+   Some suggestions may cause a decrease in performance. In that case, discard the suggestion and experiment with the next suggestion provided by Autotuner.
 
 ## Configuration
 
