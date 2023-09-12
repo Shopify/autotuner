@@ -16,8 +16,13 @@ module Autotuner
       def to_s
         msg = +assist_message
         msg << "\n"
-        msg << message
-        msg << "\n"
+
+        m = message
+        if m
+          msg << m
+          msg << "\n"
+        end
+
         msg << DISCLAIMER_MESSAGE
         msg.freeze
       end
