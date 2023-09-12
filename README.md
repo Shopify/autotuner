@@ -13,32 +13,32 @@ $ bundle add autotuner
 ## Quick start
 
 1. Open the `config.ru` file in your Rails app and add the following line immediately above `run(Rails.application)`:
-  ```ruby
-  use(Autotuner::RackPlugin)
-  ```
+   ```ruby
+   use(Autotuner::RackPlugin)
+   ```
 1. Create an initializer in `config/initializers/autotuner.rb`:
-  ```ruby
-  # Enable autotuner. Alternatively, call Autotuner.sample_ratio= with a value
-  # between 0 and 1.0 to sample on a portion of instances.
-  Autotuner.enabled = true
+   ```ruby
+   # Enable autotuner. Alternatively, call Autotuner.sample_ratio= with a value
+   # between 0 and 1.0 to sample on a portion of instances.
+   Autotuner.enabled = true
 
-  # This callback is called whenever a suggestion is provided by this gem.
-  # You can output this report to your logging pipeline, stdout, a file,
-  # or somewhere else!
-  Autotuner.reporter = proc do |report|
-    Rails.logger.info(report.to_s)
-  end
+   # This callback is called whenever a suggestion is provided by this gem.
+   # You can output this report to your logging pipeline, stdout, a file,
+   # or somewhere else!
+   Autotuner.reporter = proc do |report|
+     Rails.logger.info(report.to_s)
+   end
 
-  # This (optional) callback is called to provide metrics that can give you
-  # insights about the performance of your app. It's recommended to send this
-  # data to your observability service (e.g. Datadog, Prometheus, New Relic, etc).
-  Autotuner.metrics_reporter = proc do |metrics|
-    # stats is a hash of metric name (string) to integer value.
-    metrics.each do |key, val|
-      StatsD.gauge(key, val)
-    end
-  end
-  ```
+   # This (optional) callback is called to provide metrics that can give you
+   # insights about the performance of your app. It's recommended to send this
+   # data to your observability service (e.g. Datadog, Prometheus, New Relic, etc).
+   Autotuner.metrics_reporter = proc do |metrics|
+     # stats is a hash of metric name (string) to integer value.
+     metrics.each do |key, val|
+       StatsD.gauge(key, val)
+     end
+   end
+   ```
 
 ## Experimenting with tuning suggestions
 
