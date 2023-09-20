@@ -7,14 +7,22 @@ module Autotuner
         private
 
         def supported?
-          # Ruby 3.3.0 and later have support RUBY_GC_HEAP_%d_INIT_SLOTS
-          # RUBY_VERSION >= "3.3.0"
-          # TODO: use the check above
-          true
+          # Ruby 3.2 uses multiple heaps but does not support the
+          # RUBY_GC_HEAP_%d_INIT_SLOTS environment variables, so we cannot
+          # accurately tune the heap size.
+          !RUBY_VERSION.start_with?("3.2.")
         end
       end
 
-      HEAP_NAMES = GC.stat_heap.keys.map(&:to_s).freeze
+      # Ruby 3.3.0 and later have support for RUBY_GC_HEAP_%d_INIT_SLOTS
+      SUPPORT_MULTI_HEAP_P = RUBY_VERSION >= "3.3.0"
+
+      HEAP_NAMES =
+        if SUPPORT_MULTI_HEAP_P
+          GC.stat_heap.keys.map(&:to_s).freeze
+        else
+          [nil]
+        end
 
       HEAP_SIZE_CONFIGURATION_DELTA_RATIO = 0.01
       HEAP_SIZE_CONFIGURATION_DELTA = 1_000
@@ -43,7 +51,14 @@ module Autotuner
         return if @given_suggestion
 
         @heaps_data.each_with_index do |data, i|
-          data.insert(request_context.after_gc_context.stat_heap[i][:heap_eden_slots])
+          value =
+            if SUPPORT_MULTI_HEAP_P
+              request_context.after_gc_context.stat_heap[i][:heap_eden_slots]
+            else
+              request_context.after_gc_context.stat[:heap_available_slots]
+            end
+
+          data.insert(value)
         end
       end
 
@@ -104,7 +119,11 @@ module Autotuner
       end
 
       def env_name_for_heap(heap_name)
-        "RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS"
+        if SUPPORT_MULTI_HEAP_P
+          "RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS"
+        else
+          "RUBY_GC_HEAP_INIT_SLOTS"
+        end
       end
     end
   end
