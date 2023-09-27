@@ -4,6 +4,8 @@ module Autotuner
   module Heuristic
     class TestRememberedWBUnprotectedObjects < Minitest::Test
       def setup
+        skip if RUBY_VERSION < "3.3.0"
+
         @remembered_wb_unprotected_objects = RememberedWBUnprotectedObjects.new(nil)
         @request_context = RequestContext.new
 

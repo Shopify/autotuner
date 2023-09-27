@@ -8,9 +8,7 @@ module Autotuner
 
         def supported?
           # Ruby 3.3.0 and later have support RUBY_GC_HEAP_REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO
-          # RUBY_VERSION >= "3.3.0"
-          # TODO: use the check above
-          true
+          RUBY_VERSION >= "3.3.0"
         end
       end
 
