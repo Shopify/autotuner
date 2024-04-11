@@ -6,7 +6,6 @@ require: rubocop-minitest
 AllCops:
   NewCops: enable
   SuggestExtensions: false
-  TargetRubyVersion: 2.6
 
 Minitest/AssertInDelta:
   Enabled: false
