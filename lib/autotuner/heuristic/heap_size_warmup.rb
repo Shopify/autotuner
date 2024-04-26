@@ -28,7 +28,7 @@ module Autotuner
       HEAP_SIZE_CONFIGURATION_DELTA = 1_000
 
       REPORT_ASSIST_MESSAGE = <<~MSG
-        The following suggestions adjusts the size of heap at boot time, which can improve bootup speed and reduce the time taken for the app to reach peak performance.
+        The following suggestions adjust the size of the heap at boot time, which can improve bootup speed and reduce the time taken for the app to reach peak performance.
       MSG
 
       def initialize(_system_context)

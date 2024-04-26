@@ -65,9 +65,9 @@ module Autotuner
 
         Report::SingleEnvironmentVariable.new(
           <<~MSG,
-            The following suggestions reduces the number of major garbage collection cycles, specifically a cycle called "remembered write barrier unprotected" (also know as "shady" due to historical reasons). Your app runs remembered write barrier unprotected cycles in approximately #{format("%.2f", wb_unprotected_gc_ratio * 100)}% of all major garbage collection cycles.
+            The following suggestions reduce the number of major garbage collection cycles, specifically a cycle called "remembered write barrier unprotected" (also know as "shady" due to historical reasons). Your app runs remembered write barrier unprotected cycles in approximately #{format("%.2f", wb_unprotected_gc_ratio * 100)}% of all major garbage collection cycles.
 
-            Reducing major garbage collection cycles can help reduce response times, especially for the extremes (e.g. p95 or p99 response times). The following tuning values aims to disable oldmalloc garbage collection cycles by setting it to an extremely high value. This may cause a slight increase in memory usage. You should monitor memory usage carefully to ensure your app is not running out of memory.
+            Reducing major garbage collection cycles can help reduce response times, especially for the extremes (e.g. p95 or p99 response times). The following tuning values aim to disable oldmalloc garbage collection cycles by setting it to an extremely high value. This may cause a slight increase in memory usage. You should monitor memory usage carefully to ensure your app is not running out of memory.
           MSG
           LIMIT_RATIO_ENV,
           suggested_limit_ratio,
