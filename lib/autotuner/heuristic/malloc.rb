@@ -68,9 +68,9 @@ module Autotuner
 
         Report::MultipleEnvironmentVariables.new(
           <<~MSG,
-            The following suggestions reduces the number of minor garbage collection cycles, specifically a cycle called "malloc". Your app runs malloc cycles in approximately #{format("%.2f", malloc_gc_ratio * 100)}% of all minor garbage collection cycles.
+            The following suggestions reduce the number of minor garbage collection cycles, specifically a cycle called "malloc". Your app runs malloc cycles in approximately #{format("%.2f", malloc_gc_ratio * 100)}% of all minor garbage collection cycles.
 
-            Reducing minor garbage collection cycles can help reduce response times. The following tuning values aims to reduce malloc garbage collection cycles by setting it to a higher value. This may cause a slight increase in memory usage. You should monitor memory usage carefully to ensure your app is not running out of memory.
+            Reducing minor garbage collection cycles can help reduce response times. The following tuning values aim to reduce malloc garbage collection cycles by setting it to a higher value. This may cause a slight increase in memory usage. You should monitor memory usage carefully to ensure your app is not running out of memory.
           MSG
           [LIMIT_ENV, LIMIT_MAX_ENV],
           # Suggest to double the limit and max

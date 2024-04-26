@@ -67,9 +67,9 @@ module Autotuner
 
         Report::MultipleEnvironmentVariables.new(
           <<~MSG,
-            The following suggestions reduces the number of major garbage collection cycles, specifically a cycle called "oldmalloc". Your app runs oldmalloc cycles in approximately #{format("%.2f", oldmalloc_gc_ratio * 100)}% of all major garbage collection cycles.
+            The following suggestions reduce the number of major garbage collection cycles, specifically a cycle called "oldmalloc". Your app runs oldmalloc cycles in approximately #{format("%.2f", oldmalloc_gc_ratio * 100)}% of all major garbage collection cycles.
 
-            Reducing major garbage collection cycles can help reduce response times, especially for the extremes (e.g. p95 or p99 response times). The following tuning values aims to disable oldmalloc garbage collection cycles by setting it to an extremely high value. This may cause a slight increase in memory usage. You should monitor memory usage carefully to ensure your app is not running out of memory.
+            Reducing major garbage collection cycles can help reduce response times, especially for the extremes (e.g. p95 or p99 response times). The following tuning values aim to disable oldmalloc garbage collection cycles by setting it to an extremely high value. This may cause a slight increase in memory usage. You should monitor memory usage carefully to ensure your app is not running out of memory.
           MSG
           [LIMIT_ENV, LIMIT_MAX_ENV],
           [LIMIT_ENV_SUGGESTED_VALUE, LIMIT_MAX_SUGGESTED_VALUE],
