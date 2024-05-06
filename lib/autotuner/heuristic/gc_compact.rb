@@ -43,9 +43,13 @@ module Autotuner
 
           For example, in Puma, add the following code into config/puma.rb:
 
+            compacted = false
             before_fork do
-              3.times { GC.start }
-              GC.compact
+              unless compacted
+                3.times { GC.start }
+                GC.compact
+                compacted = true
+              end
             end
         MSG
       end
