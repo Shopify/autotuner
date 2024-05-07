@@ -3,10 +3,10 @@
 module Autotuner
   module Heuristics
     HEURISTICS = Heuristic::Base.subclasses.freeze
-    ENABLED_HEURISTICS = HEURISTICS.dup.keep_if(&:enabled?).freeze
+    SUPPORTED_HEURISTICS = HEURISTICS.dup.keep_if(&:supported?).freeze
 
-    def enabled_heuristics
-      ENABLED_HEURISTICS
+    def supported_heuristics
+      SUPPORTED_HEURISTICS
     end
   end
 end

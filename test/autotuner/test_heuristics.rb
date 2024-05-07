@@ -5,14 +5,14 @@ require "test_helper"
 module Autotuner
   class TestHeuristics < Minitest::Test
     def setup
-      @heuristics = Autotuner.enabled_heuristics.map { |h| h.new(nil) }
+      @heuristics = Autotuner.supported_heuristics.map { |h| h.new(nil) }
     end
 
     def test_heuristics
-      assert_operator(Autotuner.enabled_heuristics.length, :>, 0)
+      assert_operator(Autotuner.supported_heuristics.length, :>, 0)
 
-      Autotuner.enabled_heuristics.each do |heuristic|
-        assert_predicate(heuristic, :enabled?)
+      Autotuner.supported_heuristics.each do |heuristic|
+        assert_predicate(heuristic, :supported?)
       end
     end
 

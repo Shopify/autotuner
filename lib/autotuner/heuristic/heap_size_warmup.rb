@@ -4,8 +4,6 @@ module Autotuner
   module Heuristic
     class HeapSizeWarmup < Base
       class << self
-        private
-
         def supported?
           # Ruby 3.2 uses multiple heaps but does not support the
           # RUBY_GC_HEAP_%d_INIT_SLOTS environment variables, so we cannot

@@ -4,8 +4,6 @@ module Autotuner
   module Heuristic
     class RememberedWBUnprotectedObjects < Base
       class << self
-        private
-
         def supported?
           # Ruby 3.3.0 and later have support RUBY_GC_HEAP_REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO
           RUBY_VERSION >= "3.3.0"

@@ -14,7 +14,7 @@ module Autotuner
 
       @system_context = SystemContext.new
 
-      @heuristics = Autotuner.enabled_heuristics.map { |h| h.new(@system_context) }
+      @heuristics = Autotuner.supported_heuristics.map { |h| h.new(@system_context) }
     end
 
     def request
