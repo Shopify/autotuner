@@ -23,6 +23,7 @@ module Autotuner
         report = gc_compact.tuning_report
 
         refute_nil(report)
+        assert_equal("GCCompact", report.heuristic_name)
 
         # Does not give report twice
         report = gc_compact.tuning_report

@@ -22,6 +22,7 @@ module Autotuner
 
         report = @heap_size_warmup.tuning_report
 
+        assert_equal("HeapSizeWarmup", report.heuristic_name)
         assert_equal(HeapSizeWarmup::REPORT_ASSIST_MESSAGE, report.assist_message)
 
         if HeapSizeWarmup::SUPPORT_MULTI_HEAP_P

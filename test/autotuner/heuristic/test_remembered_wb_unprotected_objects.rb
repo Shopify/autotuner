@@ -53,6 +53,7 @@ module Autotuner
 
         report = @remembered_wb_unprotected_objects.tuning_report
 
+        assert_equal("WBUnprotectedObjects", report.heuristic_name)
         assert_includes(report.assist_message, "50.00%")
         assert_equal(RememberedWBUnprotectedObjects::LIMIT_RATIO_ENV, report.env_name)
         assert_equal(RememberedWBUnprotectedObjects::DEFAULT_LIMIT_RATIO * 2, report.suggested_value)

@@ -97,7 +97,13 @@ module Autotuner
         # Don't generate report if there is nothing to report
         return if suggested_values.empty?
 
-        Report::MultipleEnvironmentVariables.new(REPORT_ASSIST_MESSAGE, env_names, suggested_values, configured_values)
+        Report::MultipleEnvironmentVariables.new(
+          name,
+          REPORT_ASSIST_MESSAGE,
+          env_names,
+          suggested_values,
+          configured_values,
+        )
       end
 
       def debug_state
