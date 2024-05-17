@@ -36,7 +36,7 @@ module Autotuner
       end
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
-      @request_collector.stubs(:heuristics).returns(heuristics)
+      @request_collector.instance_variable_set(:@heuristics, heuristics)
 
       @request_collector.request {}
 
@@ -69,7 +69,7 @@ module Autotuner
       Autotuner.reporter = mock
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
-      @request_collector.stubs(:heuristics).returns(heuristics)
+      @request_collector.instance_variable_set(:@heuristics, heuristics)
 
       (RequestCollector::HEURISTICS_POLLING_FREQUENCY - 1).times do
         @request_collector.request {}
@@ -103,6 +103,35 @@ module Autotuner
       heuristics.each { |h| assert_equal(2, h.tuning_report_calls) }
     end
 
+    def test_request_does_not_call_disabled_heuristics
+      disabled_heuristic, mock_heuristic = 2.times.map do
+        Class.new(Heuristic::Base) do
+          attr_reader :calls
+
+          def initialize
+            super(nil)
+
+            @calls = []
+          end
+
+          def call(request_context)
+            @calls << request_context
+          end
+        end
+      end
+      disabled_heuristic.disable!
+
+      heuristics = [disabled_heuristic.new, mock_heuristic.new]
+      @request_collector.instance_variable_set(:@heuristics, heuristics)
+
+      @request_collector.request {}
+
+      assert_empty(heuristics[0].calls)
+
+      assert_equal(1, heuristics[1].calls.length)
+      assert_instance_of(RequestContext, heuristics[1].calls[0])
+    end
+
     def test_request_polls_debug_states
       mock_heuristic = Class.new(Heuristic::Base) do
         attr_reader :name, :debug_state
@@ -125,7 +154,7 @@ module Autotuner
       Autotuner.debug_reporter = mock
 
       heuristics = [mock_heuristic.new("Heuristic1", { foo: "bar" }), mock_heuristic.new("Heuristic2", { bar: "baz" })]
-      @request_collector.stubs(:heuristics).returns(heuristics)
+      @request_collector.instance_variable_set(:@heuristics, heuristics)
 
       (RequestCollector::DEBUG_EMIT_FREQUENCY - 1).times do
         @request_collector.request {}
@@ -137,6 +166,53 @@ module Autotuner
           value[:system_context].is_a?(Hash) &&
             value["Heuristic1"] == heuristics[0].debug_state &&
             value["Heuristic2"] == heuristics[1].debug_state
+        end
+        .once
+      @request_collector.request {}
+    ensure
+      Autotuner.debug_reporter = orig_debug_reporter
+    end
+
+    def test_request_does_not_poll_debug_states_for_disabled_heuristics
+      disabled_heuristic, mock_heuristic = 2.times.map do
+        Class.new(Heuristic::Base) do
+          attr_reader :name, :debug_state
+
+          def initialize(name, debug_state)
+            super(nil)
+
+            @name = name
+            @debug_state = debug_state
+          end
+
+          def call(request_context); end
+
+          def tuning_report
+            nil
+          end
+        end
+      end
+      disabled_heuristic.disable!
+
+      orig_debug_reporter = Autotuner.debug_reporter
+      Autotuner.debug_reporter = mock
+
+      heuristics = [
+        disabled_heuristic.new("DisabledHeuristic", { foo: "bar" }),
+        mock_heuristic.new("Heuristic", { bar: "baz" }),
+      ]
+      @request_collector.instance_variable_set(:@heuristics, heuristics)
+
+      (RequestCollector::DEBUG_EMIT_FREQUENCY - 1).times do
+        @request_collector.request {}
+      end
+
+      Autotuner.debug_reporter
+        .expects(:call)
+        .with do |value|
+          value[:system_context].is_a?(Hash) &&
+            !value.key?("DisabledHeuristic") &&
+            value["Heuristic"] == heuristics[1].debug_state
         end
         .once
       @request_collector.request {}

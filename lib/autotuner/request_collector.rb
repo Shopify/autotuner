@@ -5,8 +5,6 @@ module Autotuner
     HEURISTICS_POLLING_FREQUENCY = 100
     DEBUG_EMIT_FREQUENCY = 1000
 
-    attr_reader :heuristics
-
     def initialize
       @request_count = 0
 
@@ -14,7 +12,7 @@ module Autotuner
 
       @system_context = SystemContext.new
 
-      @heuristics = Autotuner.enabled_heuristics.map { |h| h.new(@system_context) }
+      @heuristics = Autotuner.supported_heuristics.map { |h| h.new(@system_context) }
     end
 
     def request
@@ -27,6 +25,16 @@ module Autotuner
 
     private
 
+    def enabled_heuristics
+      Enumerator.new do |y|
+        @heuristics.each do |heuristic|
+          next unless heuristic.class.enabled?
+
+          y << heuristic
+        end
+      end
+    end
+
     def before_request
       @request_context.before_request
 
@@ -38,7 +46,7 @@ module Autotuner
 
       @system_context.update(@request_context)
 
-      heuristics.each do |heuristic|
+      enabled_heuristics.each do |heuristic|
         heuristic.call(@request_context)
       end
 
@@ -48,7 +56,7 @@ module Autotuner
     end
 
     def emit_heuristic_reports
-      heuristics.each do |heuristic|
+      enabled_heuristics.each do |heuristic|
         report = heuristic.tuning_report
 
         next unless report
@@ -68,7 +76,7 @@ module Autotuner
         system_context: @system_context.debug_state,
       }
 
-      heuristics.each do |h|
+      enabled_heuristics.each do |h|
         debug_states[h.name] = h.debug_state
       end
 

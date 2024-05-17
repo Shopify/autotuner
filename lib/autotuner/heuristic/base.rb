@@ -5,14 +5,12 @@ module Autotuner
     class Base
       class << self
         def enabled?
-          supported? && !@disabled
+          !@disabled
         end
 
         def disable!
           @disabled = true
         end
-
-        private
 
         def supported?
           raise NotImplementedError

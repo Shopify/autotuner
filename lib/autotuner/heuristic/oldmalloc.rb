@@ -4,8 +4,6 @@ module Autotuner
   module Heuristic
     class Oldmalloc < Base
       class << self
-        private
-
         def supported?
           true
         end
