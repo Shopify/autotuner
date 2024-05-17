@@ -41,10 +41,18 @@ module Autotuner
             3.times { GC.start }
             GC.compact
 
-          For example, in Puma, add the following code into config/puma.rb:
+          For example, with Puma, which runs its before fork hook once on boot (before the initial fork), add the following code into config/puma.rb:
+
+            before_fork do
+              3.times { GC.start }
+              GC.compact
+            end
+
+          With Unicorn, which runs its before fork hook before each fork, add the following code into config/unicorn.rb:
 
             compacted = false
             before_fork do
+              # avoid invalidating heap pages shared with previously forked children
               unless compacted
                 3.times { GC.start }
                 GC.compact
