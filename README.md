@@ -69,6 +69,18 @@ While autotuner aims to comprehensively analyze your traffic to give the suggest
 - `Autotuner.debug_reporter=`: (optional) Callback to periodically emit debug messages of internal state of heuristics. The callback will be called with one argument which will be a hash with the heuristic name as the key and the debug message as the value. Regular users do not need to configure this as this is only useful for debugging purposes.
 - `Autotuner.metrics_reporter=`: (optional) Callback to emit useful metrics about your service. The callback will be called with a hash containing the metric names (string) as the key and integer values.
 
+## Emitted Metrics
+
+The following metrics are passed to the `metrics_reporter` callback after each request.
+
+| Name                  | Description |
+| --------------------- | ----------- |
+| `diff.time`           | Time spent doing garbage collection during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `diff.minor_gc_count` | Number of minor garbage collections that occurred during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `diff.major_gc_count` | Number of major garbage collections that occurred during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `heap_pages`          | Number of heap pages in use after the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `request_time`        | Total duration of the request. |
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/autotuner.
