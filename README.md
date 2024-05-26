@@ -64,10 +64,22 @@ While autotuner aims to comprehensively analyze your traffic to give the suggest
 ## Configuration
 
 - `Autotuner.enabled=`: (required, unless `Autotuner.sample_ratio` is set) Sets whether autotuner is enabled or not. When autotuner is disabled, data is not collected and suggestions are not given. Defaults to `false`.
-- `Autotuner.sample_ratio=`: (optional) Sets the portion of instances where autotuner is enabled. Pass a value between 0 (enabled on no intances) and 1.0 (enabled on all instances). Note that this does not sample requests, but rather samples the portion of instances that have autotuner enabled (it will be enabled for all requests on those instances). Do not configure `Autotuner.enabled=` when you use this option.
+- `Autotuner.sample_ratio=`: (optional) Sets the portion of instances where autotuner is enabled. Pass a value between 0 (enabled on no instances) and 1.0 (enabled on all instances). Note that this does not sample requests, but rather samples the portion of instances that have autotuner enabled (it will be enabled for all requests on those instances). Do not configure `Autotuner.enabled=` when you use this option.
 - `Autotuner.reporter=`: (required) Callback called when a heuristic is ready to give a suggestion. The callback will be called with one argument which will be an instance of `Autotuner::Report::Base`. Call `#to_s` on this object to get a string containing instructions and recommendations. You must set this when autotuner is enabled.
 - `Autotuner.debug_reporter=`: (optional) Callback to periodically emit debug messages of internal state of heuristics. The callback will be called with one argument which will be a hash with the heuristic name as the key and the debug message as the value. Regular users do not need to configure this as this is only useful for debugging purposes.
 - `Autotuner.metrics_reporter=`: (optional) Callback to emit useful metrics about your service. The callback will be called with a hash containing the metric names (string) as the key and integer values.
+
+## Emitted Metrics
+
+The following metrics are passed to the `metrics_reporter` callback after each request.
+
+| Name                  | Description |
+| --------------------- | ----------- |
+| `diff.time`           | Time spent doing garbage collection during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `diff.minor_gc_count` | Number of minor garbage collections that occurred during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `diff.major_gc_count` | Number of major garbage collections that occurred during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `heap_pages`          | Number of heap pages in use after the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
+| `request_time`        | Total duration of the request. |
 
 ## Contributing
 
