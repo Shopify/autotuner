@@ -18,7 +18,7 @@ GEM
       racc
     racc (1.8.0)
     rainbow (3.1.1)
-    rake (13.1.0)
+    rake (13.2.1)
     regexp_parser (2.9.2)
     rexml (3.3.0)
       strscan
@@ -52,7 +52,7 @@ DEPENDENCIES
   autotuner!
   minitest (~> 5.0)
   mocha
-  rake (~> 13.0)
+  rake (~> 13.2)
   rubocop (~> 1.64)
   rubocop-minitest
   rubocop-shopify
