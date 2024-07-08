@@ -7,8 +7,8 @@ module Autotuner
       attr_reader :suggested_value
       attr_reader :configured_value
 
-      def initialize(assist_message, env_name, suggested_value, configured_value)
-        super(assist_message)
+      def initialize(heuristic_name, assist_message, env_name, suggested_value, configured_value)
+        super(heuristic_name, assist_message)
         @env_name = env_name
         @suggested_value = suggested_value
         @configured_value = configured_value
