@@ -25,7 +25,7 @@ module Autotuner
       end
 
       def suggested_tuning_str(env, suggested, configured)
-        str = +"  #{env}=#{suggested}"
+        str = "  #{env}=#{suggested}"
         str << " (configured value: #{configured})" if configured
         str << "\n"
         str
