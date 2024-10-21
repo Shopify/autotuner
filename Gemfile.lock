@@ -20,7 +20,7 @@ GEM
     rainbow (3.1.1)
     rake (13.2.1)
     regexp_parser (2.9.2)
-    rubocop (1.66.1)
+    rubocop (1.67.0)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -39,7 +39,7 @@ GEM
       rubocop (~> 1.51)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
-    unicode-display_width (2.5.0)
+    unicode-display_width (2.6.0)
 
 PLATFORMS
   ruby
@@ -49,7 +49,7 @@ DEPENDENCIES
   minitest (~> 5.25)
   mocha
   rake (~> 13.2)
-  rubocop (~> 1.66)
+  rubocop (~> 1.67)
   rubocop-minitest
   rubocop-shopify
 
