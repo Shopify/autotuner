@@ -62,6 +62,7 @@ module Autotuner
         @given_suggestion = true
 
         Report::SingleEnvironmentVariable.new(
+          name,
           <<~MSG,
             The following suggestions reduce the number of major garbage collection cycles, specifically a cycle called "remembered write barrier unprotected" (also know as "shady" due to historical reasons). Your app runs remembered write barrier unprotected cycles in approximately #{format("%.2f", wb_unprotected_gc_ratio * 100)}% of all major garbage collection cycles.
 

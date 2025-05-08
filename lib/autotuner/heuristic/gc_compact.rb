@@ -31,7 +31,7 @@ module Autotuner
         # Don't give suggestion twice
         @called_gc_compact = true
 
-        Report::String.new(<<~MSG)
+        Report::String.new(name, <<~MSG)
           The following suggestion runs compaction at boot time, which reduces fragmentation inside of the Ruby heap. This can improve performance and reduce memory usage in forking web servers.
 
           Before forking your web server, run the following Ruby code:
