@@ -3,7 +3,7 @@
 {
 	"name": "autotuner",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "ghcr.io/rails/devcontainer/images/ruby:3.3.0",
+	"image": "ghcr.io/rails/devcontainer/images/ruby:3.4.7",
 	"features": {
 		"ghcr.io/devcontainers/features/github-cli:1": {}
 	}
