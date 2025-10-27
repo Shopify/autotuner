@@ -85,7 +85,7 @@ module Autotuner
       def test_tuning_report_with_configured_value_lower_than_default
         original_env = ENV.to_h
 
-        ENV["RUBY_GC_HEAP_REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO"] = "0.0".to_s
+        ENV["RUBY_GC_HEAP_REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO"] = "0.0"
 
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
           @request_context.after_gc_context.latest_gc_info[:major_by] = :shady

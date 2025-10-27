@@ -70,7 +70,7 @@ module Autotuner
           sum_x_y += x_val * y_val
         end
 
-        ((length * sum_x_y) - (sum_x * sum_y)).to_f / \
+        ((length * sum_x_y) - (sum_x * sum_y)).to_f /
           (Math.sqrt((length * sum_x_2) - (sum_x**2)) * Math.sqrt((length * sum_y_2) - (sum_y**2)))
       end
 
