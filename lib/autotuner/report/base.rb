@@ -7,9 +7,10 @@ module Autotuner
         It is always recommended to experiment with these suggestions as some suggestions may not always yield positive performance improvements. The recommended method is to perform A/B testing where a portion of traffic does not have the these suggested values and a portion of traffic with these suggested values.
       MSG
 
-      attr_reader :assist_message
+      attr_reader :heuristic_name, :assist_message
 
-      def initialize(assist_message)
+      def initialize(heuristic_name, assist_message)
+        @heuristic_name = heuristic_name
         @assist_message = assist_message
       end
 

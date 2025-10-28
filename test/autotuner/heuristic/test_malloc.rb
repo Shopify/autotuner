@@ -60,6 +60,7 @@ module Autotuner
 
         report = @malloc.tuning_report
 
+        assert_equal("Malloc", report.heuristic_name)
         assert_includes(report.assist_message, "50.00%")
         assert_equal([Malloc::LIMIT_ENV, Malloc::LIMIT_MAX_ENV], report.env_name)
         assert_equal(

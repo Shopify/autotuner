@@ -65,6 +65,7 @@ module Autotuner
         @given_suggestion = true
 
         Report::MultipleEnvironmentVariables.new(
+          name,
           <<~MSG,
             The following suggestions reduce the number of minor garbage collection cycles, specifically a cycle called "malloc". Your app runs malloc cycles in approximately #{format("%.2f", malloc_gc_ratio * 100)}% of all minor garbage collection cycles.
 

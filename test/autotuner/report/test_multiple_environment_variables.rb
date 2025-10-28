@@ -5,11 +5,20 @@ require "test_helper"
 module Autotuner
   module Report
     class TestMultipleEnvironementVariables < Minitest::Test
+      def test_heuristic_name
+        msg = "Testing message\n"
+        env_name = ["TESTING_ONE", "TESTING_TWO"]
+        suggested_value = [12, 34]
+        report = MultipleEnvironmentVariables.new("test_heuristic", msg, env_name, suggested_value, [nil, nil])
+
+        assert_equal("test_heuristic", report.heuristic_name)
+      end
+
       def test_to_s
         msg = "Testing message\n"
         env_name = ["TESTING_ONE", "TESTING_TWO"]
         suggested_value = [12, 34]
-        report = MultipleEnvironmentVariables.new(msg, env_name, suggested_value, [nil, nil])
+        report = MultipleEnvironmentVariables.new("test_heuristic", msg, env_name, suggested_value, [nil, nil])
 
         assert_equal(<<~MSG, report.to_s)
           Testing message
@@ -26,7 +35,7 @@ module Autotuner
         msg = "Testing message\n"
         env_name = ["TESTING_ONE", "TESTING_TWO"]
         suggested_value = [12, 34]
-        report = MultipleEnvironmentVariables.new(msg, env_name, suggested_value, [nil, 10])
+        report = MultipleEnvironmentVariables.new("test_heuristic", msg, env_name, suggested_value, [nil, 10])
 
         assert_equal(<<~MSG, report.to_s)
           Testing message
