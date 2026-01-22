@@ -10,7 +10,7 @@ GEM
     json (2.15.2)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
-    minitest (5.26.0)
+    minitest (5.27.0)
     mocha (2.7.1)
       ruby2_keywords (>= 0.0.5)
     parallel (1.27.0)
@@ -53,7 +53,7 @@ PLATFORMS
 
 DEPENDENCIES
   autotuner!
-  minitest (~> 5.26)
+  minitest (~> 5.27)
   mocha
   rake (~> 13.3)
   rubocop (~> 1.81)
