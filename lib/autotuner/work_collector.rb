@@ -1,26 +1,27 @@
 # frozen_string_literal: true
 
 module Autotuner
-  class RequestCollector
+  class WorkCollector
     HEURISTICS_POLLING_FREQUENCY = 100
     DEBUG_EMIT_FREQUENCY = 1000
 
-    def initialize
-      @request_count = 0
+    def initialize(work_type:)
+      @work_type = work_type
+      @work_count = 0
 
-      @request_context = RequestContext.new
+      @work_context = WorkContext.new
 
       @system_context = SystemContext.new
 
       @heuristics = Autotuner.supported_heuristics.map { |h| h.new(@system_context) }
     end
 
-    def request
-      before_request
+    def measure
+      before_work
 
       yield
     ensure
-      after_request
+      after_work
     end
 
     private
@@ -35,23 +36,23 @@ module Autotuner
       end
     end
 
-    def before_request
-      @request_context.before_request
+    def before_work
+      @work_context.before_work
 
-      @request_count += 1
+      @work_count += 1
     end
 
-    def after_request
-      @request_context.after_request
+    def after_work
+      @work_context.after_work
 
-      @system_context.update(@request_context)
+      @system_context.update(@work_context)
 
       enabled_heuristics.each do |heuristic|
-        heuristic.call(@request_context)
+        heuristic.call(@work_context)
       end
 
-      emit_heuristic_reports if @request_count % HEURISTICS_POLLING_FREQUENCY == 0
-      emit_debugging_states if @request_count % DEBUG_EMIT_FREQUENCY == 0
+      emit_heuristic_reports if @work_count % HEURISTICS_POLLING_FREQUENCY == 0
+      emit_debugging_states if @work_count % DEBUG_EMIT_FREQUENCY == 0
       emit_metrics
     end
 
@@ -91,17 +92,20 @@ module Autotuner
         "diff.time" => gc_stat_diff(:time),
         "diff.minor_gc_count" => gc_stat_diff(:minor_gc_count),
         "diff.major_gc_count" => gc_stat_diff(:major_gc_count),
-        "request_time" => @request_context.request_time,
+        "work_duration" => @work_context.work_duration,
 
         # Metrics
-        "heap_pages" => @request_context.after_gc_context.stat[:heap_eden_pages],
+        "heap_pages" => @work_context.after_gc_context.stat[:heap_eden_pages],
+
+        # Tags
+        "work_type" => @work_type,
       }
 
       Autotuner.metrics_reporter.call(metrics)
     end
 
     def gc_stat_diff(stat)
-      @request_context.after_gc_context.stat[stat] - @request_context.before_gc_context.stat[stat]
+      @work_context.after_gc_context.stat[stat] - @work_context.before_gc_context.stat[stat]
     end
   end
 end

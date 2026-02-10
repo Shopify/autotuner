@@ -2,19 +2,19 @@
 
 module Autotuner
   class SystemContext
-    attr_reader :request_time_data
+    attr_reader :work_duration_data
 
     def initialize
-      @request_time_data = DataStructure::DataPoints.new(Configuration::DATA_POINTS_COUNT)
+      @work_duration_data = DataStructure::DataPoints.new(Configuration::DATA_POINTS_COUNT)
     end
 
-    def update(request_context)
-      @request_time_data.insert(request_context.request_time)
+    def update(work_context)
+      @work_duration_data.insert(work_context.work_duration)
     end
 
     def debug_state
       {
-        request_time_data: @request_time_data.debug_state,
+        work_duration_data: @work_duration_data.debug_state,
       }
     end
   end

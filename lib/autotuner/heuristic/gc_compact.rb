@@ -19,10 +19,10 @@ module Autotuner
         "GCCompact"
       end
 
-      def call(request_context)
+      def call(work_context)
         return unless @called_gc_compact.nil?
 
-        @called_gc_compact = request_context.before_gc_context.stat[:compact_count] > 0
+        @called_gc_compact = work_context.before_gc_context.stat[:compact_count] > 0
       end
 
       def tuning_report

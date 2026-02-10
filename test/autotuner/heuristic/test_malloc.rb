@@ -5,12 +5,12 @@ module Autotuner
     class TestMalloc < Minitest::Test
       def setup
         @malloc = Malloc.new(nil)
-        @request_context = RequestContext.new
+        @work_context = WorkContext.new
 
-        @request_context.after_gc_context.stat[:minor_gc_count] =
-          @request_context.before_gc_context.stat[:minor_gc_count] + 1
-        @request_context.after_gc_context.latest_gc_info[:major_by] = nil
-        @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+        @work_context.after_gc_context.stat[:minor_gc_count] =
+          @work_context.before_gc_context.stat[:minor_gc_count] + 1
+        @work_context.after_gc_context.latest_gc_info[:major_by] = nil
+        @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
       end
 
       def test_enabled?
@@ -18,32 +18,32 @@ module Autotuner
       end
 
       def test_call_increments_minor_and_malloc_counts
-        @malloc.call(@request_context)
+        @malloc.call(@work_context)
 
         assert_equal(1, @malloc.minor_gc_count)
         assert_equal(1, @malloc.malloc_gc_count)
       end
 
       def test_call_increments_minor_count
-        @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
-        @malloc.call(@request_context)
+        @work_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+        @malloc.call(@work_context)
 
         assert_equal(1, @malloc.minor_gc_count)
         assert_equal(0, @malloc.malloc_gc_count)
       end
 
       def test_call_does_not_increment_for_major_gc
-        @request_context.after_gc_context.latest_gc_info[:major_by] = :force
-        @malloc.call(@request_context)
+        @work_context.after_gc_context.latest_gc_info[:major_by] = :force
+        @malloc.call(@work_context)
 
         assert_equal(0, @malloc.minor_gc_count)
         assert_equal(0, @malloc.malloc_gc_count)
       end
 
       def test_call_does_not_increment_when_no_minor_gc_ran
-        @request_context.after_gc_context.stat[:minor_gc_count] =
-          @request_context.before_gc_context.stat[:minor_gc_count]
-        @malloc.call(@request_context)
+        @work_context.after_gc_context.stat[:minor_gc_count] =
+          @work_context.before_gc_context.stat[:minor_gc_count]
+        @malloc.call(@work_context)
 
         assert_equal(0, @malloc.minor_gc_count)
         assert_equal(0, @malloc.malloc_gc_count)
@@ -51,11 +51,11 @@ module Autotuner
 
       def test_tuning_report
         Malloc::MIN_MALLOC_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+          @malloc.call(@work_context)
         end
 
         report = @malloc.tuning_report
@@ -80,11 +80,11 @@ module Autotuner
         ENV["RUBY_GC_MALLOC_LIMIT_MAX"] = configured_limit_max.to_s
 
         Malloc::MIN_MALLOC_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+          @malloc.call(@work_context)
         end
 
         report = @malloc.tuning_report
@@ -110,11 +110,11 @@ module Autotuner
         ENV["RUBY_GC_MALLOC_LIMIT_MAX"] = configured_limit_max.to_s
 
         Malloc::MIN_MALLOC_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+          @malloc.call(@work_context)
         end
 
         report = @malloc.tuning_report
@@ -136,8 +136,8 @@ module Autotuner
 
       def test_tuning_report_below_min_malloc
         (Malloc::MIN_MALLOC_GC - 1).times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
         end
 
         assert_nil(@malloc.tuning_report)
@@ -145,12 +145,12 @@ module Autotuner
 
       def test_tuning_report_below_ratio
         Malloc::MIN_MALLOC_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
 
           (1 / Malloc::MALLOC_GC_RATIO_THRESHOLD).to_i.times do
-            @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
-            @malloc.call(@request_context)
+            @work_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+            @malloc.call(@work_context)
           end
         end
 
@@ -159,8 +159,8 @@ module Autotuner
 
       def test_tuning_report_does_not_give_suggestion_twice
         Malloc::MIN_MALLOC_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
         end
 
         refute_nil(@malloc.tuning_report)
@@ -169,11 +169,11 @@ module Autotuner
 
       def test_debug_state
         Malloc::MIN_MALLOC_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :malloc
+          @malloc.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
-          @malloc.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:gc_by] = :newobj
+          @malloc.call(@work_context)
         end
 
         @malloc.tuning_report

@@ -79,7 +79,8 @@ The following metrics are passed to the `metrics_reporter` callback after each r
 | `diff.minor_gc_count` | Number of minor garbage collections that occurred during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
 | `diff.major_gc_count` | Number of major garbage collections that occurred during the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
 | `heap_pages`          | Number of heap pages in use after the request. Produced by [GC::stat](https://docs.ruby-lang.org/en/master/GC.html#method-c-stat) |
-| `request_time`        | Total duration of the request. |
+| `work_duration`       | Total duration of the unit of work (request, job, etc). |
+| `work_type`           | Type of work: `"request"` for Rack, `"job"` for ActiveJob. |
 
 ## Contributing
 

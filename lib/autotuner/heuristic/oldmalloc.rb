@@ -37,10 +37,10 @@ module Autotuner
         "Oldmalloc"
       end
 
-      def call(request_context)
+      def call(work_context)
         # major_by is only useful if we ran at least one major GC during the request
-        if request_context.after_gc_context.stat[:major_gc_count] ==
-            request_context.before_gc_context.stat[:major_gc_count]
+        if work_context.after_gc_context.stat[:major_gc_count] ==
+            work_context.before_gc_context.stat[:major_gc_count]
           return
         end
 
@@ -48,7 +48,7 @@ module Autotuner
         # since we don't have information about the other major GC, we'll treat
         # it as if there was only one major GC.
         @major_gc_count += 1
-        @oldmalloc_gc_count += 1 if request_context.after_gc_context.latest_gc_info[:major_by] == :oldmalloc
+        @oldmalloc_gc_count += 1 if work_context.after_gc_context.latest_gc_info[:major_by] == :oldmalloc
       end
 
       def tuning_report

@@ -4,12 +4,12 @@ module Autotuner
   class RackPlugin
     def initialize(app)
       @app = app
-      @request_collector = RequestCollector.new
+      @work_collector = WorkCollector.new(work_type: "request")
     end
 
     def call(env)
       if Autotuner.enabled?
-        @request_collector.request do
+        @work_collector.measure do
           @app.call(env)
         end
       else

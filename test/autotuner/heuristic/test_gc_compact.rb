@@ -6,9 +6,9 @@ module Autotuner
       def setup
         @gc_compact = GCCompact.new(nil)
 
-        @request_context = RequestContext.new
-        @request_context.before_gc_context.stat[:compact_count] = 1
-        @request_context.after_gc_context.stat[:compact_count] = 1
+        @work_context = WorkContext.new
+        @work_context.before_gc_context.stat[:compact_count] = 1
+        @work_context.after_gc_context.stat[:compact_count] = 1
       end
 
       def test_enabled?
@@ -18,7 +18,7 @@ module Autotuner
       def test_tuning_report
         # Test no GC compaction ran
         gc_compact = GCCompact.new(nil)
-        gc_compact.call(RequestContext.new)
+        gc_compact.call(WorkContext.new)
 
         report = gc_compact.tuning_report
 
@@ -35,7 +35,7 @@ module Autotuner
         # GC.compact is not reversible
         GC.compact
         gc_compact = GCCompact.new(nil)
-        gc_compact.call(RequestContext.new)
+        gc_compact.call(WorkContext.new)
 
         report = gc_compact.tuning_report
 
@@ -43,7 +43,7 @@ module Autotuner
       end
 
       def test_debug_state
-        @gc_compact.call(@request_context)
+        @gc_compact.call(@work_context)
 
         state = @gc_compact.debug_state
 

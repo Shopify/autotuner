@@ -7,11 +7,11 @@ module Autotuner
         skip if RUBY_VERSION < "3.3.0"
 
         @remembered_wb_unprotected_objects = RememberedWBUnprotectedObjects.new(nil)
-        @request_context = RequestContext.new
+        @work_context = WorkContext.new
 
-        @request_context.after_gc_context.stat[:major_gc_count] =
-          @request_context.before_gc_context.stat[:major_gc_count] + 1
-        @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
+        @work_context.after_gc_context.stat[:major_gc_count] =
+          @work_context.before_gc_context.stat[:major_gc_count] + 1
+        @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
       end
 
       def test_enabled?
@@ -19,24 +19,24 @@ module Autotuner
       end
 
       def test_call_increments_major_and_wb_unprotected_counts
-        @remembered_wb_unprotected_objects.call(@request_context)
+        @remembered_wb_unprotected_objects.call(@work_context)
 
         assert_equal(1, @remembered_wb_unprotected_objects.major_gc_count)
         assert_equal(1, @remembered_wb_unprotected_objects.remembered_wb_unprotected_gc_count)
       end
 
       def test_call_increments_major_count
-        @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
-        @remembered_wb_unprotected_objects.call(@request_context)
+        @work_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+        @remembered_wb_unprotected_objects.call(@work_context)
 
         assert_equal(1, @remembered_wb_unprotected_objects.major_gc_count)
         assert_equal(0, @remembered_wb_unprotected_objects.remembered_wb_unprotected_gc_count)
       end
 
       def test_call_does_not_increment_when_no_major_gc_ran
-        @request_context.after_gc_context.stat[:major_gc_count] =
-          @request_context.before_gc_context.stat[:major_gc_count]
-        @remembered_wb_unprotected_objects.call(@request_context)
+        @work_context.after_gc_context.stat[:major_gc_count] =
+          @work_context.before_gc_context.stat[:major_gc_count]
+        @remembered_wb_unprotected_objects.call(@work_context)
 
         assert_equal(0, @remembered_wb_unprotected_objects.major_gc_count)
         assert_equal(0, @remembered_wb_unprotected_objects.remembered_wb_unprotected_gc_count)
@@ -44,11 +44,11 @@ module Autotuner
 
       def test_tuning_report
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @remembered_wb_unprotected_objects.call(@work_context)
         end
 
         report = @remembered_wb_unprotected_objects.tuning_report
@@ -66,11 +66,11 @@ module Autotuner
         ENV["RUBY_GC_HEAP_REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO"] = "0.25"
 
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @remembered_wb_unprotected_objects.call(@work_context)
         end
 
         report = @remembered_wb_unprotected_objects.tuning_report
@@ -89,11 +89,11 @@ module Autotuner
         ENV["RUBY_GC_HEAP_REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO"] = "0.0"
 
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @remembered_wb_unprotected_objects.call(@work_context)
         end
 
         report = @remembered_wb_unprotected_objects.tuning_report
@@ -112,8 +112,8 @@ module Autotuner
 
       def test_tuning_report_below_min_wb_unprotected_gc
         (RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC - 1).times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
         end
 
         assert_nil(@remembered_wb_unprotected_objects.tuning_report)
@@ -121,12 +121,12 @@ module Autotuner
 
       def test_tuning_report_below_ratio
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
 
           (1 / RememberedWBUnprotectedObjects::WB_UNPROTECTED_GC_RATIO_THRESHOLD).to_i.times do
-            @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
-            @remembered_wb_unprotected_objects.call(@request_context)
+            @work_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+            @remembered_wb_unprotected_objects.call(@work_context)
           end
         end
 
@@ -135,8 +135,8 @@ module Autotuner
 
       def test_tuning_report_does_not_give_suggestion_twice
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
         end
 
         refute_nil(@remembered_wb_unprotected_objects.tuning_report)
@@ -145,11 +145,11 @@ module Autotuner
 
       def test_debug_state
         RememberedWBUnprotectedObjects::MIN_WB_UNPROTECTED_GC.times do
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :shady
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :shady
+          @remembered_wb_unprotected_objects.call(@work_context)
 
-          @request_context.after_gc_context.latest_gc_info[:major_by] = :nofree
-          @remembered_wb_unprotected_objects.call(@request_context)
+          @work_context.after_gc_context.latest_gc_info[:major_by] = :nofree
+          @remembered_wb_unprotected_objects.call(@work_context)
         end
 
         @remembered_wb_unprotected_objects.tuning_report

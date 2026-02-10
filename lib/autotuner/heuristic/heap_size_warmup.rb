@@ -44,16 +44,16 @@ module Autotuner
         "HeapSizeWarmup"
       end
 
-      def call(request_context)
+      def call(work_context)
         # We only want to collect data at boot until plateau
         return if @given_suggestion
 
         @heaps_data.each_with_index do |data, i|
           value =
             if SUPPORT_MULTI_HEAP_P
-              request_context.after_gc_context.stat_heap[i][:heap_eden_slots]
+              work_context.after_gc_context.stat_heap[i][:heap_eden_slots]
             else
-              request_context.after_gc_context.stat[:heap_available_slots]
+              work_context.after_gc_context.stat[:heap_available_slots]
             end
 
           data.insert(value)
@@ -64,7 +64,7 @@ module Autotuner
         # Don't give suggestions twice
         return if @given_suggestion
         # The request time should plateau
-        return unless @system_context.request_time_data.plateaued?
+        return unless @system_context.work_duration_data.plateaued?
 
         @given_suggestion = true
 

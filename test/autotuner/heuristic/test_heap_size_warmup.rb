@@ -10,7 +10,7 @@ module Autotuner
 
         @system_context = SystemContext.new
         @heap_size_warmup = HeapSizeWarmup.new(@system_context)
-        @request_context = RequestContext.new
+        @work_context = WorkContext.new
       end
 
       def test_enabled?
@@ -31,7 +31,7 @@ module Autotuner
           assert_equal(5, report.configured_value.length)
           HeapSizeWarmup::HEAP_NAMES.each_with_index do |heap_name, i|
             assert_equal("RUBY_GC_HEAP_#{heap_name}_INIT_SLOTS", report.env_name[i])
-            assert_equal(@request_context.after_gc_context.stat_heap[i][:heap_eden_slots], report.suggested_value[i])
+            assert_equal(@work_context.after_gc_context.stat_heap[i][:heap_eden_slots], report.suggested_value[i])
             assert_nil(report.configured_value[i])
           end
         else
@@ -39,7 +39,7 @@ module Autotuner
           assert_equal(1, report.suggested_value.length)
           assert_equal(1, report.configured_value.length)
           assert_equal("RUBY_GC_HEAP_INIT_SLOTS", report.env_name[0])
-          assert_equal(@request_context.after_gc_context.stat[:heap_available_slots], report.suggested_value[0])
+          assert_equal(@work_context.after_gc_context.stat[:heap_available_slots], report.suggested_value[0])
           assert_nil(report.configured_value[0])
         end
       end
@@ -113,13 +113,13 @@ module Autotuner
         assert_nil(report)
 
         # Insert non-platueau data
-        request_time = 0
+        work_duration = 0
         (Configuration::DATA_POINTS_COUNT + 1).times do |_i|
-          request_time += 10
-          @request_context.stubs(:request_time).returns(request_time)
+          work_duration += 10
+          @work_context.stubs(:work_duration).returns(work_duration)
 
-          @system_context.update(@request_context)
-          @heap_size_warmup.call(@request_context)
+          @system_context.update(@work_context)
+          @heap_size_warmup.call(@work_context)
         end
 
         report = @heap_size_warmup.tuning_report
@@ -192,17 +192,17 @@ module Autotuner
       def insert_plateau_data(heap_slots = nil)
         if HeapSizeWarmup::SUPPORT_MULTI_HEAP_P
           HeapSizeWarmup::HEAP_NAMES.length.times do |i|
-            @request_context.after_gc_context.stat_heap[i][:heap_eden_slots] =
+            @work_context.after_gc_context.stat_heap[i][:heap_eden_slots] =
               heap_slots ? heap_slots[i] : rand(100)
           end
         else
-          @request_context.after_gc_context.stat[:heap_available_slots] = heap_slots ? heap_slots : rand(100)
+          @work_context.after_gc_context.stat[:heap_available_slots] = heap_slots ? heap_slots : rand(100)
         end
 
         (Configuration::DATA_POINTS_COUNT + 1).times do |_i|
-          @request_context.stubs(:request_time).returns(100 + rand(2))
-          @system_context.update(@request_context)
-          @heap_size_warmup.call(@request_context)
+          @work_context.stubs(:work_duration).returns(100 + rand(2))
+          @system_context.update(@work_context)
+          @heap_size_warmup.call(@work_context)
         end
       end
     end

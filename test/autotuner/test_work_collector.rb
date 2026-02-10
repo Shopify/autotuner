@@ -3,9 +3,9 @@
 require "test_helper"
 
 module Autotuner
-  class TestRequestCollector < Minitest::Test
+  class TestWorkCollector < Minitest::Test
     def setup
-      @request_collector = RequestCollector.new
+      @work_collector = WorkCollector.new(work_type: "request")
       @original_reporter = Autotuner.reporter
       Autotuner.reporter = proc { |_| }
     end
@@ -14,13 +14,13 @@ module Autotuner
       Autotuner.reporter = @original_reporter
     end
 
-    def test_request_updates_request_context
-      RequestContext.any_instance.expects(:before_request).once
+    def test_measure_updates_work_context
+      WorkContext.any_instance.expects(:before_work).once
 
-      @request_collector.request { RequestContext.any_instance.expects(:after_request).once }
+      @work_collector.measure { WorkContext.any_instance.expects(:after_work).once }
     end
 
-    def test_request_calls_heuristics_with_request_context
+    def test_measure_calls_heuristics_with_work_context
       mock_heuristic = Class.new(Heuristic::Base) do
         attr_reader :calls
 
@@ -30,23 +30,23 @@ module Autotuner
           @calls = []
         end
 
-        def call(request_context)
-          @calls << request_context
+        def call(work_context)
+          @calls << work_context
         end
       end
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
-      @request_collector.instance_variable_set(:@heuristics, heuristics)
+      @work_collector.instance_variable_set(:@heuristics, heuristics)
 
-      @request_collector.request {}
+      @work_collector.measure {}
 
       heuristics.each do |h|
         assert_equal(1, h.calls.length)
-        assert_instance_of(RequestContext, h.calls[0])
+        assert_instance_of(WorkContext, h.calls[0])
       end
     end
 
-    def test_request_polls_heuristic_tuning_report
+    def test_measure_polls_heuristic_tuning_report
       mock_heuristic = Class.new(Heuristic::Base) do
         attr_writer :tuning_report
         attr_reader :tuning_report_calls
@@ -57,7 +57,7 @@ module Autotuner
           @tuning_report_calls = 0
         end
 
-        def call(request_context); end
+        def call(work_context); end
 
         def tuning_report
           @tuning_report_calls += 1
@@ -69,10 +69,10 @@ module Autotuner
       Autotuner.reporter = mock
 
       heuristics = [mock_heuristic.new, mock_heuristic.new]
-      @request_collector.instance_variable_set(:@heuristics, heuristics)
+      @work_collector.instance_variable_set(:@heuristics, heuristics)
 
-      (RequestCollector::HEURISTICS_POLLING_FREQUENCY - 1).times do
-        @request_collector.request {}
+      (WorkCollector::HEURISTICS_POLLING_FREQUENCY - 1).times do
+        @work_collector.measure {}
 
         heuristics.each { |h| assert_equal(0, h.tuning_report_calls) }
       end
@@ -81,12 +81,12 @@ module Autotuner
       heuristics[1].tuning_report = report1
       Autotuner.reporter.expects(:call).with(report1).once
 
-      @request_collector.request {}
+      @work_collector.measure {}
 
       heuristics.each { |h| assert_equal(1, h.tuning_report_calls) }
 
-      (RequestCollector::HEURISTICS_POLLING_FREQUENCY - 1).times do
-        @request_collector.request {}
+      (WorkCollector::HEURISTICS_POLLING_FREQUENCY - 1).times do
+        @work_collector.measure {}
 
         heuristics.each { |h| assert_equal(1, h.tuning_report_calls) }
       end
@@ -98,12 +98,12 @@ module Autotuner
       Autotuner.reporter.expects(:call).with(report1).once
       Autotuner.reporter.expects(:call).with(report2).once
 
-      @request_collector.request {}
+      @work_collector.measure {}
 
       heuristics.each { |h| assert_equal(2, h.tuning_report_calls) }
     end
 
-    def test_request_does_not_call_disabled_heuristics
+    def test_measure_does_not_call_disabled_heuristics
       disabled_heuristic, mock_heuristic = 2.times.map do
         Class.new(Heuristic::Base) do
           attr_reader :calls
@@ -114,25 +114,25 @@ module Autotuner
             @calls = []
           end
 
-          def call(request_context)
-            @calls << request_context
+          def call(work_context)
+            @calls << work_context
           end
         end
       end
       disabled_heuristic.disable!
 
       heuristics = [disabled_heuristic.new, mock_heuristic.new]
-      @request_collector.instance_variable_set(:@heuristics, heuristics)
+      @work_collector.instance_variable_set(:@heuristics, heuristics)
 
-      @request_collector.request {}
+      @work_collector.measure {}
 
       assert_empty(heuristics[0].calls)
 
       assert_equal(1, heuristics[1].calls.length)
-      assert_instance_of(RequestContext, heuristics[1].calls[0])
+      assert_instance_of(WorkContext, heuristics[1].calls[0])
     end
 
-    def test_request_polls_debug_states
+    def test_measure_polls_debug_states
       mock_heuristic = Class.new(Heuristic::Base) do
         attr_reader :name, :debug_state
 
@@ -143,7 +143,7 @@ module Autotuner
           @debug_state = debug_state
         end
 
-        def call(request_context); end
+        def call(work_context); end
 
         def tuning_report
           nil
@@ -154,10 +154,10 @@ module Autotuner
       Autotuner.debug_reporter = mock
 
       heuristics = [mock_heuristic.new("Heuristic1", { foo: "bar" }), mock_heuristic.new("Heuristic2", { bar: "baz" })]
-      @request_collector.instance_variable_set(:@heuristics, heuristics)
+      @work_collector.instance_variable_set(:@heuristics, heuristics)
 
-      (RequestCollector::DEBUG_EMIT_FREQUENCY - 1).times do
-        @request_collector.request {}
+      (WorkCollector::DEBUG_EMIT_FREQUENCY - 1).times do
+        @work_collector.measure {}
       end
 
       Autotuner.debug_reporter
@@ -168,12 +168,12 @@ module Autotuner
             value["Heuristic2"] == heuristics[1].debug_state
         end
         .once
-      @request_collector.request {}
+      @work_collector.measure {}
     ensure
       Autotuner.debug_reporter = orig_debug_reporter
     end
 
-    def test_request_does_not_poll_debug_states_for_disabled_heuristics
+    def test_measure_does_not_poll_debug_states_for_disabled_heuristics
       disabled_heuristic, mock_heuristic = 2.times.map do
         Class.new(Heuristic::Base) do
           attr_reader :name, :debug_state
@@ -185,7 +185,7 @@ module Autotuner
             @debug_state = debug_state
           end
 
-          def call(request_context); end
+          def call(work_context); end
 
           def tuning_report
             nil
@@ -201,10 +201,10 @@ module Autotuner
         disabled_heuristic.new("DisabledHeuristic", { foo: "bar" }),
         mock_heuristic.new("Heuristic", { bar: "baz" }),
       ]
-      @request_collector.instance_variable_set(:@heuristics, heuristics)
+      @work_collector.instance_variable_set(:@heuristics, heuristics)
 
-      (RequestCollector::DEBUG_EMIT_FREQUENCY - 1).times do
-        @request_collector.request {}
+      (WorkCollector::DEBUG_EMIT_FREQUENCY - 1).times do
+        @work_collector.measure {}
       end
 
       Autotuner.debug_reporter
@@ -215,12 +215,12 @@ module Autotuner
             value["Heuristic"] == heuristics[1].debug_state
         end
         .once
-      @request_collector.request {}
+      @work_collector.measure {}
     ensure
       Autotuner.debug_reporter = orig_debug_reporter
     end
 
-    def test_request_calls_metrics_reporter
+    def test_measure_calls_metrics_reporter
       orig_metrics_reporter = Autotuner.metrics_reporter
 
       metrics = nil
@@ -228,20 +228,21 @@ module Autotuner
         metrics = m
       end
 
-      @request_collector.request {}
+      @work_collector.measure {}
 
       refute_nil(metrics)
-      ["diff.time", "diff.minor_gc_count", "diff.major_gc_count", "request_time", "request_time"].each do |key|
+      ["diff.time", "diff.minor_gc_count", "diff.major_gc_count", "work_duration"].each do |key|
         assert_operator(metrics[key], :>=, 0)
       end
+      assert_equal("request", metrics["work_type"])
 
       # Run a major GC
-      @request_collector.request { GC.start }
+      @work_collector.measure { GC.start }
 
       assert_operator(metrics["diff.major_gc_count"], :>=, 1)
 
       # Run a minor GC
-      @request_collector.request { GC.start(full_mark: false) }
+      @work_collector.measure { GC.start(full_mark: false) }
 
       assert_operator(metrics["diff.minor_gc_count"], :>=, 1)
     ensure
