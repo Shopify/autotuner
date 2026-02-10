@@ -14,7 +14,6 @@ require_relative "autotuner/report/multiple_environment_variables"
 require_relative "autotuner/report/single_environment_variable"
 require_relative "autotuner/report/string"
 
-require_relative "autotuner/active_job_plugin"
 require_relative "autotuner/configuration"
 require_relative "autotuner/gc_context"
 require_relative "autotuner/heuristics"
@@ -28,3 +27,5 @@ module Autotuner
   extend Configuration
   extend Heuristics
 end
+
+require_relative "autotuner/railtie" if defined?(Rails::Railtie)

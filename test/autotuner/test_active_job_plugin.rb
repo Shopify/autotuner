@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "autotuner/active_job_plugin"
 
 module Autotuner
   class TestActiveJobPlugin < Minitest::Test
@@ -57,11 +58,19 @@ begin
       end
 
       def test_perform_calls_block_when_enabled
+        work_collector = mock
+        work_collector.expects(:measure).once.yields
+        ActiveJobPlugin.instance_variable_set(:@work_collector, work_collector)
+
         TestJob.perform_now
       end
 
       def test_perform_calls_block_when_disabled
         Autotuner.instance_variable_set(:@enabled, false)
+
+        work_collector = mock
+        work_collector.expects(:measure).never
+        ActiveJobPlugin.instance_variable_set(:@work_collector, work_collector)
 
         TestJob.perform_now
       end
