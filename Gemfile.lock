@@ -20,7 +20,7 @@ GEM
     prism (1.7.0)
     racc (1.8.1)
     rainbow (3.1.1)
-    rake (13.3.1)
+    rake (13.4.2)
     regexp_parser (2.11.3)
     rubocop (1.82.1)
       json (~> 2.3)
@@ -55,7 +55,7 @@ DEPENDENCIES
   autotuner!
   minitest (~> 5.27)
   mocha
-  rake (~> 13.3)
+  rake (~> 13.4)
   rubocop (~> 1.82)
   rubocop-minitest
   rubocop-shopify
